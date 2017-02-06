@@ -1,6 +1,7 @@
 package core;
 
 import com.google.auto.service.AutoService;
+import com.rabbitmq.client.ConnectionFactory;
 import com.researchworx.cresco.library.core.WatchDog;
 import com.researchworx.cresco.library.messaging.MsgEvent;
 import com.researchworx.cresco.library.messaging.RPC;
@@ -11,12 +12,16 @@ import org.apache.commons.configuration.SubnodeConfiguration;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
+import PP.*;
+import COP.*;
+import CP.*;
 @AutoService(CPlugin.class)
 public class Launcher extends CPlugin {
 
-    //regional
+    public ConnectionFactory factory;
+    public boolean isActive = true;
 
+    private Thread ppThread = null;
     public void start() {
 
         try {
@@ -26,14 +31,8 @@ public class Launcher extends CPlugin {
             this.config = new ControllerConfig(config.getConfig());
             commInit();
 
-            /*
-            //add agents
-            new Thread(new AddAgents(this)).start();
-            //add pipeline
-            new Thread(new AddPipeline(this)).start();
-            //remove pipeline
-            new Thread(new removePipeline(this)).start();
-            */
+            ppThread.start();
+
         }
         catch(Exception ex) {
             System.out.println("start() " + getStringFromError(ex));
@@ -43,6 +42,39 @@ public class Launcher extends CPlugin {
     public void commInit() {
         try {
 
+
+		        factory = new ConnectionFactory();
+
+		        factory.setHost(config.getStringParam("amqp_host","127.0.0.1"));
+		        factory.setUsername(config.getStringParam("amqp_username","admin"));
+		        factory.setPassword(config.getStringParam("amqp_password","cody01"));
+		        factory.setConnectionTimeout(10000);
+		        //connection = factory.newConnection();
+
+
+
+            int pathStage = config.getIntegerParam("path_stage",1);
+            logger.debug("[pathStage] == {}", pathStage);
+            switch (pathStage) {
+                case 1:
+                    logger.debug("Starting PP Thread");
+                    PPEngine pp = new PPEngine(this);
+                    ppThread = new Thread(pp);
+                    break;
+                case 2:
+                    logger.debug("Starting COP Thread");
+                    COPEngine cop = new COPEngine(this);
+                    ppThread = new Thread(cop);
+                    break;
+                case 3:
+                    logger.debug("Starting CP Thread");
+                    CPEngine cp = new CPEngine(this);
+                    ppThread = new Thread(cp);
+                    break;
+                default:
+                    logger.trace("Encountered default switch path");
+                    break;
+            }
         }
         catch(Exception ex) {
             logger.error(getStringFromError(ex));
