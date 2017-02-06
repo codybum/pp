@@ -31,12 +31,12 @@ public class PPoutgoing {
 		}
 	}
 
-	public void sendMessage() {
+	public void sendMessage(String message) {
 
 		try {
-			String message = "Hello World!";
+			//String message = "Hello World!";
 			channel.basicPublish("", queueName, null, message.getBytes("UTF-8"));
-			System.out.println(" [x] Sent '" + message + "'");
+			logger.debug(" [x] Sent '" + message + "'");
 
 		}
 		catch(Exception ex) {

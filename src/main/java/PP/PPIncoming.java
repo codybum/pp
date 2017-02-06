@@ -28,19 +28,37 @@ public class PPIncoming implements Runnable {
 				Channel channel = plugin.factory.newConnection().createChannel();
 
 				channel.queueDeclare(queueName , false, false, false, null);
-				System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+				logger.info(" [*] Waiting for messages. To exit press CTRL+C");
+
+                //Consumer consumer = new DefaultConsumer(channel);
+
+
+
 
 				Consumer consumer = new DefaultConsumer(channel) {
 					@Override
 					public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
 							throws IOException {
 						String message = new String(body, "UTF-8");
-						System.out.println(" [x] Received '" + message + "'");
+                        logger.info(" [x] Received '" + message + "'");
+                        //System.exit(0);
 					}
 				};
 
-				while(pp.incomingActive) {
-                    channel.basicConsume(queueName, true, consumer);
+                channel.basicConsume(queueName, true, consumer);
+
+                while(pp.incomingActive) {
+                Thread.sleep(10000);
+/*
+                    //channel.basicConsume(queueName, true, consumer);
+
+                            QueueingConsumer.Delivery delivery = consumer.nextDelivery(500);
+                            if(!(delivery == null))
+                            {
+                                //String message = new String(delivery.getBody());
+                                //Launcher.nodeMap.get(outputNode).input(message);
+                            }
+  */
                 }
 	        }
 		   catch(Exception ex)
