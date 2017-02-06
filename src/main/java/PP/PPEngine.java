@@ -1,10 +1,13 @@
 package PP;
 
 
+import com.rabbitmq.client.ConnectionFactory;
+import com.researchworx.cresco.library.messaging.MsgEvent;
 import com.researchworx.cresco.library.utilities.CLogger;
 import core.Launcher;
 
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class PPEngine implements Runnable {
 
@@ -13,45 +16,49 @@ public class PPEngine implements Runnable {
 	public String ppId = null;
 	public boolean incomingActive = false;
 	public PPoutgoing sendout;
+    public ConnectionFactory ppFactory;
+    public String copId = null;
 
-	public PPEngine(Launcher plugin)
+    public PPEngine(Launcher plugin)
 	{
 		this.logger = new CLogger(PPEngine.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
 		this.plugin = plugin;
-		//ppId = UUID.randomUUID().toString();
-		ppId = "cat";
-		sendout = new PPoutgoing(plugin,this);
+		ppId = "pp-" + UUID.randomUUID().toString();
+
+		copId = plugin.getConfig().getStringParam("cop_id","cop-0");
+        //copQueue = "pp-" + ppId;
+        ppFactory = new ConnectionFactory();
+        ppFactory.setHost(plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1"));
+        ppFactory.setUsername(plugin.getConfig().getStringParam("pp_amqp_username","admin"));
+        ppFactory.setPassword(plugin.getConfig().getStringParam("pp_amqp_password","cody01"));
+        ppFactory.setConnectionTimeout(10000);
+
 	}
 	 public void run() {
 	        try 
 	        {
-	        	new Thread(new PPIncoming(plugin,this)).start();
+				PPIncoming incoming = new PPIncoming(plugin,this);
+				incoming.start();
 
-	        	while(plugin.isActive) {
+                sendout = new PPoutgoing(plugin,this);
 
-					logger.debug("Start Data GEN");
-					int regionCount = 10;
-					int agentCount = 10;
-					int pluginCount = 10;
+                while(plugin.isActive) {
 
-					for(int i = 0; i < regionCount; i++) {
-						//System.out.println("Start AddRegion1" + i);
-						for(int ii = 0; ii < agentCount; ii++) {
-							//System.out.println("Start AddRegion2" + i + " " + ii);
+                    StringBuilder sb = new StringBuilder();
+                    for(int i = 0; i < 100; i++) {
+                        int sensorValue = ThreadLocalRandom.current().nextInt(0, 10);
+                        sb.append("s" + i + ":" + sensorValue + ",");
+                    }
+                    MsgEvent me = new MsgEvent(MsgEvent.Type.CONFIG, null, copId, ppId, "");
+                    me.setParam("sensor_data",String.valueOf(sb.toString().substring(0,sb.length() -1)));
 
-							for(int iii = 0; iii < pluginCount; iii++) {
-								//System.out.println("Start AddRegion3" + i + " " + ii + " " + iii);
-								//plugin.getGDB().gdb.addNode("region-" + i, "agent-" + ii, "plugin/" + iii);
-								sendout.sendMessage(String.valueOf(i + ii + iii));
-								//logger.info("Sending message");
-							}
-
-						}
-
-					}
+                    sendout.sendMessage(copId,me);
+                    Thread.sleep(5000);
 
 
-				}
+                }
+
+                incoming.stop();
 
 
 	        }

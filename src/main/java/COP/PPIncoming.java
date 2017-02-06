@@ -1,6 +1,7 @@
-package PP;
+package COP;
 
 
+import PP.PPEngine;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.rabbitmq.client.*;
@@ -14,11 +15,11 @@ public class PPIncoming {
 
 	private Launcher plugin;
 	private CLogger logger;
-	private PPEngine pp;
+	private COPEngine pp;
 	private Channel channel;
 	private Gson gson;
 
-	public PPIncoming(Launcher plugin, PPEngine pp)
+	public PPIncoming(Launcher plugin, COPEngine pp)
 	{
 		this.logger = new CLogger(PPIncoming.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
 		this.plugin = plugin;
@@ -30,8 +31,8 @@ public class PPIncoming {
 	        {
 	            channel = pp.ppFactory.newConnection().createChannel();
 
-				channel.queueDeclare(pp.ppId , false, false, false, null);
-                logger.info(" [*] Waiting for messages in " + pp.ppId);
+				channel.queueDeclare(pp.copId , false, false, false, null);
+                logger.info(" [*] Waiting for messages in " + pp.copId);
 
                 //Consumer consumer = new DefaultConsumer(channel);
 
@@ -43,15 +44,21 @@ public class PPIncoming {
 					public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
 							throws IOException {
 						String message = new String(body, "UTF-8");
-                        logger.info(pp.ppId + " [x] Received '" + message + "'");
+                        logger.info(pp.copId + " [x] Received '" + message + "'");
                         MsgEvent me = gson.fromJson(message, MsgEvent.class);
-                        //gPayload me = gson.fromJson(json, gPayload.class);
+                        if((me.getMsgRegion() == null)) {
+                            me.setMsgAgent(pp.copId);
+                            pp.sendout_cp.sendMessage(pp.cpId,me);
+                        }
+                        else {
+                            pp.sendout_pp.sendMessage(me.getMsgPlugin(),me);
+                        }
 
                         //System.exit(0);
 					}
 				};
 
-                channel.basicConsume(pp.ppId, true, consumer);
+                channel.basicConsume(pp.copId, true, consumer);
 
 	        }
 		   catch(Exception ex)

@@ -1,31 +1,30 @@
-package PP;
+package CP;
 
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.Channel;
 import com.researchworx.cresco.library.messaging.MsgEvent;
 import com.researchworx.cresco.library.utilities.CLogger;
 import core.Launcher;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PPoutgoing {
+public class CPoutgoing {
 
 	private Launcher plugin;
 	private CLogger logger;
-	private PPEngine pp;
+	private CPEngine pp;
 	//private String queueName;
 	//private Channel channel;
 	private Map<String,Channel> channelMap;
 	private Gson gson;
 
 
-	public PPoutgoing(Launcher plugin, PPEngine pp)
+	public CPoutgoing(Launcher plugin, CPEngine pp)
 	{
-		this.logger = new CLogger(PPoutgoing.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
+		this.logger = new CLogger(CPoutgoing.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
 		this.plugin = plugin;
 		this.pp = pp;
 		//queueName = "pp-" + pp.ppId;

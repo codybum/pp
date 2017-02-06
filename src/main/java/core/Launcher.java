@@ -15,10 +15,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import PP.*;
 import COP.*;
 import CP.*;
+
 @AutoService(CPlugin.class)
 public class Launcher extends CPlugin {
 
-    public ConnectionFactory factory;
     public boolean isActive = true;
 
     private Thread ppThread = null;
@@ -43,16 +43,6 @@ public class Launcher extends CPlugin {
         try {
 
 
-		        factory = new ConnectionFactory();
-
-		        factory.setHost(config.getStringParam("amqp_host","127.0.0.1"));
-		        factory.setUsername(config.getStringParam("amqp_username","admin"));
-		        factory.setPassword(config.getStringParam("amqp_password","cody01"));
-		        factory.setConnectionTimeout(10000);
-		        //connection = factory.newConnection();
-
-
-
             int pathStage = config.getIntegerParam("path_stage",1);
             logger.debug("[pathStage] == {}", pathStage);
             switch (pathStage) {
@@ -60,6 +50,14 @@ public class Launcher extends CPlugin {
                     logger.debug("Starting PP Thread");
                     PPEngine pp = new PPEngine(this);
                     ppThread = new Thread(pp);
+
+                    CPEngine cp_test = new CPEngine(this);
+                    new Thread(cp_test).start();
+
+
+                    COPEngine cop_test = new COPEngine(this);
+                    new Thread(cop_test).start();
+
                     break;
                 case 2:
                     logger.debug("Starting COP Thread");

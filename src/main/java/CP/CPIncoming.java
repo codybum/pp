@@ -1,4 +1,4 @@
-package PP;
+package CP;
 
 
 import com.google.gson.Gson;
@@ -10,17 +10,17 @@ import core.Launcher;
 
 import java.io.IOException;
 
-public class PPIncoming {
+public class CPIncoming {
 
 	private Launcher plugin;
 	private CLogger logger;
-	private PPEngine pp;
+	private CPEngine pp;
 	private Channel channel;
 	private Gson gson;
 
-	public PPIncoming(Launcher plugin, PPEngine pp)
+	public CPIncoming(Launcher plugin, CPEngine pp)
 	{
-		this.logger = new CLogger(PPIncoming.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
+		this.logger = new CLogger(CPIncoming.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
 		this.plugin = plugin;
 		this.pp = pp;
 		gson = new GsonBuilder().create();
@@ -30,8 +30,8 @@ public class PPIncoming {
 	        {
 	            channel = pp.ppFactory.newConnection().createChannel();
 
-				channel.queueDeclare(pp.ppId , false, false, false, null);
-                logger.info(" [*] Waiting for messages in " + pp.ppId);
+				channel.queueDeclare(pp.cpId , false, false, false, null);
+                logger.info(" [*] Waiting for messages in " + pp.cpId);
 
                 //Consumer consumer = new DefaultConsumer(channel);
 
@@ -43,15 +43,18 @@ public class PPIncoming {
 					public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
 							throws IOException {
 						String message = new String(body, "UTF-8");
-                        logger.info(pp.ppId + " [x] Received '" + message + "'");
-                        MsgEvent me = gson.fromJson(message, MsgEvent.class);
-                        //gPayload me = gson.fromJson(json, gPayload.class);
+                        logger.info(pp.cpId + " [x] Received '" + message + "'");
+						MsgEvent me = gson.fromJson(message, MsgEvent.class);
+						me.setMsgRegion(pp.cpId);
+						pp.sendout.sendMessage(me.getMsgAgent(),me);
+
+						//gPayload me = gson.fromJson(json, gPayload.class);
 
                         //System.exit(0);
 					}
 				};
 
-                channel.basicConsume(pp.ppId, true, consumer);
+                channel.basicConsume(pp.cpId, true, consumer);
 
 	        }
 		   catch(Exception ex)
