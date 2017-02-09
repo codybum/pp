@@ -2,16 +2,21 @@ package COP;
 
 
 import com.rabbitmq.client.ConnectionFactory;
+import com.researchworx.cresco.library.messaging.MsgEvent;
 import com.researchworx.cresco.library.utilities.CLogger;
 import core.Launcher;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class COPEngine implements Runnable {
 
 	private Launcher plugin;
 	private CLogger logger;
+
+	public ConcurrentLinkedQueue<MsgEvent> cepQueue;
+
 	public PPoutgoing sendout_pp;
 	public CPoutgoing sendout_cp;
 
@@ -25,6 +30,9 @@ public class COPEngine implements Runnable {
 	{
 		this.logger = new CLogger(COPEngine.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
 		this.plugin = plugin;
+
+		this.cepQueue = new ConcurrentLinkedQueue();
+
 		//copId = UUID.randomUUID().toString();
 		copId = "cop-" + "0";
 		cpId = "cp-" + "0";
@@ -42,6 +50,8 @@ public class COPEngine implements Runnable {
 		cpFactory.setPassword(plugin.getConfig().getStringParam("cp_amqp_password","cody01"));
 		cpFactory.setConnectionTimeout(10000);
 
+
+
 	}
 	 public void run() {
 	        try
@@ -56,6 +66,10 @@ public class COPEngine implements Runnable {
 
 				sendout_pp = new PPoutgoing(plugin,this);
 				sendout_cp = new CPoutgoing(plugin,this);
+
+				ESPEREngine ee = new ESPEREngine(plugin,this);
+				Thread et = new Thread(ee);
+				et.start();
 
                 while(plugin.isActive) {
 

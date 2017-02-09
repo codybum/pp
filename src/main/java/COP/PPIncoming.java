@@ -48,7 +48,8 @@ public class PPIncoming {
                         MsgEvent me = gson.fromJson(message, MsgEvent.class);
                         if((me.getMsgRegion() == null)) {
                             me.setMsgAgent(pp.copId);
-                            pp.sendout_cp.sendMessage(pp.cpId,me);
+                            //pp.sendout_cp.sendMessage(pp.cpId,me);
+                            pp.cepQueue.offer(me);
                         }
                         else {
                             pp.sendout_pp.sendMessage(me.getMsgPlugin(),me);

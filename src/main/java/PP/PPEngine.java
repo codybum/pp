@@ -42,13 +42,32 @@ public class PPEngine implements Runnable {
 
                 sendout = new PPoutgoing(plugin,this);
 
+                int hour = 0;
+
                 while(plugin.isActive) {
 
-                    StringBuilder sb = new StringBuilder();
-                    for(int i = 0; i < 100; i++) {
-                        int sensorValue = ThreadLocalRandom.current().nextInt(0, 10);
+                	StringBuilder sb = new StringBuilder();
+                    for(int i = 0; i < 1000; i++) {
+
+                        int sensorValue;
+                        if((hour == 6) || (hour == 9)) {
+                        	sensorValue = ThreadLocalRandom.current().nextInt(0, 25 + 1);
+						}
+						else if ((hour == 7) || (hour == 8)) {
+							sensorValue = ThreadLocalRandom.current().nextInt(0, 65 + 1);
+						}
+						else {
+							sensorValue = ThreadLocalRandom.current().nextInt(0, 10 + 1);
+						}
                         sb.append("s" + i + ":" + sensorValue + ",");
+
                     }
+
+                    if(hour == 24) {
+                        hour = 0;
+                    }
+                    hour++;
+                    logger.info("hour: " + hour);
                     MsgEvent me = new MsgEvent(MsgEvent.Type.CONFIG, null, copId, ppId, "");
                     me.setParam("sensor_data",String.valueOf(sb.toString().substring(0,sb.length() -1)));
 
