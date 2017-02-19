@@ -6,9 +6,7 @@ import com.researchworx.cresco.library.messaging.MsgEvent;
 import com.researchworx.cresco.library.utilities.CLogger;
 import core.Launcher;
 
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class COPEngine implements Runnable {
 
@@ -61,10 +59,10 @@ public class COPEngine implements Runnable {
 	 public void run() {
 	        try
 	        {
-				ESPEREngine ee = new ESPEREngine(plugin,this);
+				COPESPEREngine ee = new COPESPEREngine(plugin,this);
 				Thread et = new Thread(ee);
 				et.start();
-				logger.info("ESPER Engine Started.");
+				logger.info("COPESPER Engine Started.");
 
 				PPIncoming incoming = new PPIncoming(plugin,this);
 				incoming.start();

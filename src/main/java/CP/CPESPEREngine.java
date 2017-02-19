@@ -1,7 +1,17 @@
-package COP;
+package CP;
 
 
-import java.awt.*;
+import COP.COPEngine;
+import COP.CPoutgoing;
+import com.espertech.esper.client.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.researchworx.cresco.library.messaging.MsgEvent;
+import com.researchworx.cresco.library.utilities.CLogger;
+import core.Launcher;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,25 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.espertech.esper.client.Configuration;
-import com.espertech.esper.client.EPAdministrator;
-import com.espertech.esper.client.EPRuntime;
-import com.espertech.esper.client.EPServiceProvider;
-import com.espertech.esper.client.EPServiceProviderManager;
-import com.espertech.esper.client.EPStatement;
-import com.espertech.esper.client.EventBean;
-import com.espertech.esper.client.UpdateListener;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.researchworx.cresco.library.messaging.MsgEvent;
-import com.researchworx.cresco.library.utilities.CLogger;
-import core.Launcher;
-
-public class ESPEREngine implements Runnable {
+public class CPESPEREngine implements Runnable {
 
     private Launcher plugin;
     private CLogger logger;
-    private COPEngine pp;
+    private CPEngine pp;
 
 
     //ESPER
@@ -39,7 +35,7 @@ public class ESPEREngine implements Runnable {
 
     private static Gson gson;
 
-    public ESPEREngine(Launcher plugin, COPEngine pp)
+    public CPESPEREngine(Launcher plugin, CPEngine pp)
     {
         this.logger = new CLogger(CPoutgoing.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
         this.plugin = plugin;
@@ -69,14 +65,16 @@ public class ESPEREngine implements Runnable {
 
             Map<String, Object> sdef = new HashMap<>();
             sdef.put("ppId", String.class);
+            sdef.put("copId", String.class);
             sdef.put("sensorId", String.class);
-            sdef.put("sensorValue", int.class);
+            sdef.put("sensorValue", float.class);
 
             cepConfig.addEventType("sensorMap", sdef);
 
 
             Map<String, Object> cdef = new HashMap<>();
             cdef.put("ppId", String.class);
+            cdef.put("copId", String.class);
             cdef.put("carId", String.class);
             cdef.put("carValue", int.class);
 
@@ -108,9 +106,9 @@ public class ESPEREngine implements Runnable {
 
             //addQuery("0", "select * from sensorMap");
 
-            addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(15 sec) group by sensorId output snapshot every 5 seconds");
+            addQuery("sensor_data", "select irstream copId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(15 sec) group by sensorId output snapshot every 5 seconds");
 
-            addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
+            addQuery("car_data", "select irstream copId, count(carValue) as avgValue from carMap.win:time(15 sec) group by copId output snapshot every 5 seconds");
 
             //esper_querystring = "select params('sensor_data') from MsgEvent";
             //esper_querystring = "select * from sensorMap where sensorValue > 5";
@@ -142,14 +140,18 @@ public class ESPEREngine implements Runnable {
                             if(me != null) {
                                 //input(message);
                                 //cepRT.sendEvent(me);
+
+
+
                                 String sensor_data = me.getParam("sensor_data");
                                 String[] sensorArray = sensor_data.split(",");
                                 for(String sensorEntry : sensorArray) {
                                     String[] sensorEntrySplit = sensorEntry.split(":");
                                     Map<String,Object> sensorMap = new HashMap<>();
                                     sensorMap.put("ppId",me.getMsgPlugin());
+                                    sensorMap.put("copId",me.getMsgAgent());
                                     sensorMap.put("sensorId",sensorEntrySplit[0]);
-                                    sensorMap.put("sensorValue", Integer.parseInt(sensorEntrySplit[1]));
+                                    sensorMap.put("sensorValue", Float.parseFloat(sensorEntrySplit[1]));
                                     cepRT.sendEvent(sensorMap,"sensorMap");
                                 }
                                 String car_data = me.getParam("car_data");
@@ -158,6 +160,7 @@ public class ESPEREngine implements Runnable {
                                     String[] carEntrySplit = carEntry.split(":");
                                     Map<String,Object> carMap = new HashMap<>();
                                     carMap.put("ppId",me.getMsgPlugin());
+                                    carMap.put("copId",me.getMsgAgent());
                                     carMap.put("carId",carEntrySplit[0]);
                                     carMap.put("carValue", Integer.parseInt(carEntrySplit[1]));
                                     cepRT.sendEvent(carMap,"carMap");
@@ -172,14 +175,18 @@ public class ESPEREngine implements Runnable {
                 catch(Exception ex)
                 {
                     String errorString = "QueryNode: Error: " + ex.toString();
-                    System.out.println(errorString);
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    ex.printStackTrace(pw);
+                    logger.error(errorString);
+                    logger.error(sw.toString());
                 }
             }
 
         }
         catch(Exception ex)
         {
-            System.out.println("ESPEREngine Error: " + ex.toString());
+            System.out.println("COPESPEREngine Error: " + ex.toString());
         }
 
     }
@@ -203,15 +210,15 @@ public class ESPEREngine implements Runnable {
 
                     for (EventBean eb : newEvents) {
                         try {
-                            String ppId = eb.get("ppId").toString();
-                            if(!eventMap.containsKey(ppId)) {
-                                eventMap.put(ppId,new ArrayList<EventBean>());
+                            String copId = eb.get("copId").toString();
+                            if(!eventMap.containsKey(copId)) {
+                                eventMap.put(copId,new ArrayList<EventBean>());
                                 //logger.error("Create new ppid " + ppId + " thread: " + Thread.currentThread().getId());
                             }
-                            eventMap.get(ppId).add(eb);
+                            eventMap.get(copId).add(eb);
 
                         } catch (Exception ex) {
-                            System.out.println("ESPEREngine : Error : " + ex.toString());
+                            System.out.println("CPESPEREngine : Error : " + ex.toString());
                         }
 
                     }
@@ -219,7 +226,7 @@ public class ESPEREngine implements Runnable {
 
                     for (Map.Entry<String, List<EventBean>> entry : eventMap.entrySet()) {
                         String ppId= entry.getKey();
-                        List<EventBean> ppEvents = entry.getValue();
+                        List<EventBean> ppEvents = new ArrayList<>(entry.getValue());
 
                         for (EventBean eb : ppEvents) {
                             try {
@@ -235,36 +242,36 @@ public class ESPEREngine implements Runnable {
                                 //logger.info("new id: " + query_id + " output: " + str);
                                 //System.out.println(str);
                             } catch (Exception ex) {
-                                System.out.println("ESPEREngine : Error : " + ex.toString());
+                                System.out.println("COPESPEREngine : Error : " + ex.toString());
                             }
 
                         }
                         String sensorDataString = sb.toString().substring(0,sb.length() -1);
-                        logger.debug("new id: " + query_id + " output: " + sensorDataString);
-                        sendCPMessage(query_id,sensorDataString,ppId);
+                        logger.info("new id: " + query_id + " output: " + sensorDataString);
+                        //sendCPMessage(query_id,sensorDataString,ppId);
                     }
 
 
                 } else if (query_id.equals("car_data")) {
 
-                    String ppId = null;
+                    String copId = null;
                     StringBuilder sb = new StringBuilder();
                     for (EventBean eb : newEvents) {
                         try {
                             String carCount = eb.get("avgValue").toString();
-                            ppId = eb.get("ppId").toString();
-                            sb.append(ppId + ":" + carCount + ",");
+                            copId = eb.get("ppId").toString();
+                            sb.append(copId + ":" + carCount + ",");
                             //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
 
                             //logger.info("new id: " + query_id + " output: " + str);
                             //System.out.println(str);
                         } catch (Exception ex) {
-                            System.out.println("ESPEREngine : Error : " + ex.toString());
+                            System.out.println("COPESPEREngine : Error : " + ex.toString());
                         }
 
                         String carDataString = sb.toString().substring(0,sb.length() -1);
-                        logger.debug("new id: " + query_id + " output: " + carDataString);
-                        sendCPMessage(query_id,carDataString,ppId);
+                        logger.info("new id: " + query_id + " output: " + carDataString);
+                        //sendCPMessage(query_id,carDataString,ppId);
                     }
 
 
@@ -280,7 +287,7 @@ public class ESPEREngine implements Runnable {
                             //logger.info("id: " + query_id + " output: " +  str);
                             //System.out.println(str);
                         } catch (Exception ex) {
-                            System.out.println("ESPEREngine : Error : " + ex.toString());
+                            System.out.println("COPESPEREngine : Error : " + ex.toString());
                         }
                     }
                 }
@@ -288,10 +295,10 @@ public class ESPEREngine implements Runnable {
         }
     }
 
-    private void sendCPMessage(String key, String value, String ppId) {
-        MsgEvent me = new MsgEvent(MsgEvent.Type.CONFIG, pp.cpId, pp.copId, ppId, "");
+    private void sendCPMessage(String key, String value, String ppId, String copId) {
+        MsgEvent me = new MsgEvent(MsgEvent.Type.CONFIG, pp.cpId, copId, ppId, "");
         me.setParam(key,value);
-        pp.sendout_cp.sendMessage(pp.cpId,me);
+        pp.sendout.sendMessage(copId,me);
         //sendout.sendMessage(copId,me);
 
     }
@@ -309,7 +316,7 @@ public class ESPEREngine implements Runnable {
         }
         catch(Exception ex)
         {
-            System.out.println("ESPEREngine addQuery: " + ex.toString());
+            System.out.println("COPESPEREngine addQuery: " + ex.toString());
             return false;
         }
     }
@@ -331,7 +338,7 @@ public class ESPEREngine implements Runnable {
         }
         catch(Exception ex)
         {
-            System.out.println("ESPEREngine delQuery: " + ex.toString());
+            System.out.println("COPESPEREngine delQuery: " + ex.toString());
             return false;
         }
 
@@ -346,8 +353,8 @@ public class ESPEREngine implements Runnable {
         }
         catch(Exception ex)
         {
-            System.out.println("ESPEREngine : Input netFlow Error : " + ex.toString());
-            System.out.println("ESPEREngine : Input netFlow Error : InputStr " + inputStr);
+            System.out.println("COPESPEREngine : Input netFlow Error : " + ex.toString());
+            System.out.println("COPESPEREngine : Input netFlow Error : InputStr " + inputStr);
         }
 
     }

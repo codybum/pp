@@ -1,12 +1,14 @@
 package CP;
 
 
+import COP.COPESPEREngine;
 import com.rabbitmq.client.ConnectionFactory;
 import com.researchworx.cresco.library.messaging.MsgEvent;
 import com.researchworx.cresco.library.utilities.CLogger;
 import core.Launcher;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class CPEngine implements Runnable {
@@ -18,12 +20,16 @@ public class CPEngine implements Runnable {
     public ConnectionFactory ppFactory;
     public String cpId = null;
 
-    public CPEngine(Launcher plugin)
+	public ConcurrentLinkedQueue<MsgEvent> cepQueue;
+
+	public CPEngine(Launcher plugin)
 	{
 		this.logger = new CLogger(CPEngine.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
 		this.plugin = plugin;
 
-        //cpId = "cp-" + "0";
+		this.cepQueue = new ConcurrentLinkedQueue();
+
+		//cpId = "cp-" + "0";
 		cpId = plugin.getConfig().getStringParam("cp_id","cp-0");
 
 
@@ -38,6 +44,11 @@ public class CPEngine implements Runnable {
 	 public void run() {
 	        try
 	        {
+				CPESPEREngine ee = new CPESPEREngine(plugin,this);
+				Thread et = new Thread(ee);
+				et.start();
+				logger.info("ESPER Engine Started.");
+
 				CPIncoming incoming = new CPIncoming(plugin,this);
 				incoming.start();
 

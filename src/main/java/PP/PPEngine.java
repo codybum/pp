@@ -56,7 +56,7 @@ public class PPEngine implements Runnable {
                         hour = 0;
                     }
                     hour++;
-                    logger.info("hour: " + hour);
+                    //logger.info("hour: " + hour);
                     MsgEvent me = new MsgEvent(MsgEvent.Type.CONFIG, null, copId, ppId, "");
                     me.setParam("sensor_data",genSensorData());
                     me.setParam("car_data",genCarData(hour));

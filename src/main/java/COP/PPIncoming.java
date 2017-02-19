@@ -45,7 +45,7 @@ public class PPIncoming {
 							throws IOException {
 						String message = new String(body, "UTF-8");
                         logger.debug(pp.copId + " [x] Received '" + message + "'");
-						logger.info(pp.copId + " [x] Received");
+						//logger.info(pp.copId + " [x] Received");
 						MsgEvent me = gson.fromJson(message, MsgEvent.class);
                         if((me.getMsgRegion() == null)) {
                             me.setMsgAgent(pp.copId);

@@ -45,7 +45,7 @@ public class PPoutgoing {
             Channel channel = channelMap.get(queueName);
             channel.basicPublish("", queueName, null, message.getBytes("UTF-8"));
             logger.debug("Send to: " + queueName + " [x] Sent '" + message + "'");
-			logger.info("Send to: " + queueName );
+			//logger.info("Send to: " + queueName );
 
 
 		}
