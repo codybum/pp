@@ -44,8 +44,9 @@ public class PPIncoming {
 					public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
 							throws IOException {
 						String message = new String(body, "UTF-8");
-                        logger.info(pp.copId + " [x] Received '" + message + "'");
-                        MsgEvent me = gson.fromJson(message, MsgEvent.class);
+                        logger.debug(pp.copId + " [x] Received '" + message + "'");
+						logger.info(pp.copId + " [x] Received");
+						MsgEvent me = gson.fromJson(message, MsgEvent.class);
                         if((me.getMsgRegion() == null)) {
                             me.setMsgAgent(pp.copId);
                             //pp.sendout_cp.sendMessage(pp.cpId,me);

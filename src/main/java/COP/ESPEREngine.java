@@ -1,8 +1,11 @@
 package COP;
 
 
+import java.awt.*;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -62,21 +65,32 @@ public class ESPEREngine implements Runnable {
             //The Configuration is meant only as an initialization-time object.
             Configuration cepConfig = new Configuration();
             //cepConfig.getEngineDefaults().getThreading().setInternalTimerEnabled(false);
-            cepConfig.addEventType("MsgEvent", MsgEvent.class.getName());
+            //cepConfig.addEventType("MsgEvent", MsgEvent.class.getName());
 
-            Map<String, Object> def = new HashMap<>();
-            def.put("ppId", String.class);
-            def.put("sensorId", String.class);
-            def.put("sensorValue", int.class);
+            Map<String, Object> sdef = new HashMap<>();
+            sdef.put("ppId", String.class);
+            sdef.put("sensorId", String.class);
+            sdef.put("sensorValue", int.class);
 
-            cepConfig.addEventType("sensorMap", def);
+            cepConfig.addEventType("sensorMap", sdef);
+
+
+            Map<String, Object> cdef = new HashMap<>();
+            cdef.put("ppId", String.class);
+            cdef.put("carId", String.class);
+            cdef.put("carValue", int.class);
+
+            cepConfig.addEventType("carMap", cdef);
 
             //epService.getEPAdministrator().getConfiguration().
             //        addEventType("CarLocUpdateEvent", def);
 
             //cepConfig.addEventType("sensorMap", java.util.Map.class.getName());
 
-            EPServiceProvider cep = EPServiceProviderManager.getProvider("myCEPEngine", cepConfig);
+            //EPServiceProvider cep = EPServiceProviderManager.getProvider("myCEPEngine", cepConfig);
+            EPServiceProvider cep = EPServiceProviderManager.getDefaultProvider(cepConfig);
+
+
             cepRT = cep.getEPRuntime();
             cepAdm = cep.getEPAdministrator();
 
@@ -90,14 +104,34 @@ public class ESPEREngine implements Runnable {
             */
             //END ESPER
 
+            //addQuery("0", "select ppId from sensorMap");
+
+            //addQuery("0", "select * from sensorMap");
+
+            addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(15 sec) group by sensorId output snapshot every 5 seconds");
+
+            addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
+
             //esper_querystring = "select params('sensor_data') from MsgEvent";
             //esper_querystring = "select * from sensorMap where sensorValue > 5";
 
-            addQuery("0", "select params('sensor_data') from MsgEvent");
-            addQuery("1", "select * from sensorMap where sensorValue > 99");
+            //addQuery("0", "select ppId, avg(sensorValue) as avgValue from sensorMap.win:time_batch(10 sec) group by ppId");
+            //addQuery("0", "select irstream  ppId, avg(sensorValue) as avgValue, count(sensorValue) as countValue, min(sensorValue) as minValue, max(sensorValue) as maxValue from sensorMap.win:time(1 sec) group by rollup(ppId) output snapshot every 1 seconds");
 
-            addQuery("2", "select avg(sensorValue) as avgValue, count(sensorValue) as countValue, min(sensorValue) as minValue, max(sensorValue) as maxValue from sensorMap.win:time_batch(5 sec)");
 
+            //select account, sum(amount)
+            //    from Withdrawal.win:time_batch(1 sec)
+            //group by account
+            //addQuery("0", "select params('sensor_data') from MsgEvent");
+            //addQuery("1", "select params('car_data') from MsgEvent");
+
+            //addQuery("1", "select * from sensorMap where sensorValue > 99");
+
+//            addQuery("3", "select ppId, avg(sensorValue) as avgValue, count(sensorValue) as countValue, min(sensorValue) as minValue, max(sensorValue) as maxValue from sensorMap.win:time_batch(5 sec) group by ppId");
+            //addQuery("3", "select avg(sensorValue) as avgValue, count(sensorValue) as countValue, min(sensorValue) as minValue, max(sensorValue) as maxValue from sensorMap.win:time_batch(5 sec) group by ppId");
+            //addQuery("3", "select ppId from sensorMap.win:time_batch(5 sec) group by ppId");
+            //addQuery("4", "select avg(carValue) as avgValue, count(carValue) as countValue, min(carValue) as minValue, max(carValue) as maxValue from carMap.win:time_batch(5 sec)");
+//group by feed output snapshot every 1 sec
 
 
             while (plugin.isActive)
@@ -107,17 +141,28 @@ public class ESPEREngine implements Runnable {
                     MsgEvent me = pp.cepQueue.poll();
                             if(me != null) {
                                 //input(message);
-                                cepRT.sendEvent(me);
+                                //cepRT.sendEvent(me);
                                 String sensor_data = me.getParam("sensor_data");
                                 String[] sensorArray = sensor_data.split(",");
                                 for(String sensorEntry : sensorArray) {
                                     String[] sensorEntrySplit = sensorEntry.split(":");
                                     Map<String,Object> sensorMap = new HashMap<>();
-                                    sensorMap.put("pp",me.getMsgPlugin());
+                                    sensorMap.put("ppId",me.getMsgPlugin());
                                     sensorMap.put("sensorId",sensorEntrySplit[0]);
                                     sensorMap.put("sensorValue", Integer.parseInt(sensorEntrySplit[1]));
                                     cepRT.sendEvent(sensorMap,"sensorMap");
                                 }
+                                String car_data = me.getParam("car_data");
+                                String[] carArray = car_data.split(",");
+                                for(String carEntry : carArray) {
+                                    String[] carEntrySplit = carEntry.split(":");
+                                    Map<String,Object> carMap = new HashMap<>();
+                                    carMap.put("ppId",me.getMsgPlugin());
+                                    carMap.put("carId",carEntrySplit[0]);
+                                    carMap.put("carValue", Integer.parseInt(carEntrySplit[1]));
+                                    cepRT.sendEvent(carMap,"carMap");
+                                }
+
                             }
                             else {
                                 Thread.sleep(1000);
@@ -149,32 +194,106 @@ public class ESPEREngine implements Runnable {
             this.outExchange = outExchange;
         }
         public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-            if (newEvents != null)
-            {
+            if (newEvents != null) {
 
-                String str = newEvents[0].getUnderlying().toString();
-                if(str != null)
-                {
-                    try
-                    {
-                        //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
-                        logger.info("id: " + query_id + " output: " +  str);
-                        //System.out.println(str);
+                if (query_id.equals("sensor_data")) {
+
+                    StringBuilder sb = new StringBuilder();
+                    Map<String, List<EventBean>> eventMap = new HashMap<>();
+
+                    for (EventBean eb : newEvents) {
+                        try {
+                            String ppId = eb.get("ppId").toString();
+                            if(!eventMap.containsKey(ppId)) {
+                                eventMap.put(ppId,new ArrayList<EventBean>());
+                                //logger.error("Create new ppid " + ppId + " thread: " + Thread.currentThread().getId());
+                            }
+                            eventMap.get(ppId).add(eb);
+
+                        } catch (Exception ex) {
+                            System.out.println("ESPEREngine : Error : " + ex.toString());
+                        }
+
                     }
-                    catch(Exception ex)
-                    {
-                        System.out.println("ESPEREngine : Error : " + ex.toString());
+
+
+                    for (Map.Entry<String, List<EventBean>> entry : eventMap.entrySet()) {
+                        String ppId= entry.getKey();
+                        List<EventBean> ppEvents = entry.getValue();
+
+                        for (EventBean eb : ppEvents) {
+                            try {
+                                if(!eventMap.containsKey(ppId)) {
+                                    eventMap.put(ppId,new ArrayList<EventBean>());
+                                }
+                                eventMap.get(ppId).add(eb);
+                                String sensorValue = eb.get("avgValue").toString();
+                                String sensorId = eb.get("sensorId").toString();
+                                sb.append(sensorId + ":" + sensorValue + ",");
+                                //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
+
+                                //logger.info("new id: " + query_id + " output: " + str);
+                                //System.out.println(str);
+                            } catch (Exception ex) {
+                                System.out.println("ESPEREngine : Error : " + ex.toString());
+                            }
+
+                        }
+                        String sensorDataString = sb.toString().substring(0,sb.length() -1);
+                        logger.debug("new id: " + query_id + " output: " + sensorDataString);
+                        sendCPMessage(query_id,sensorDataString,ppId);
+                    }
+
+
+                } else if (query_id.equals("car_data")) {
+
+                    String ppId = null;
+                    StringBuilder sb = new StringBuilder();
+                    for (EventBean eb : newEvents) {
+                        try {
+                            String carCount = eb.get("avgValue").toString();
+                            ppId = eb.get("ppId").toString();
+                            sb.append(ppId + ":" + carCount + ",");
+                            //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
+
+                            //logger.info("new id: " + query_id + " output: " + str);
+                            //System.out.println(str);
+                        } catch (Exception ex) {
+                            System.out.println("ESPEREngine : Error : " + ex.toString());
+                        }
+
+                        String carDataString = sb.toString().substring(0,sb.length() -1);
+                        logger.debug("new id: " + query_id + " output: " + carDataString);
+                        sendCPMessage(query_id,carDataString,ppId);
+                    }
+
+
+                }
+                if (oldEvents != null) {
+                    for (EventBean eb : oldEvents) {
+                        String str = eb.getUnderlying().toString();
+
+                        try {
+                            logger.debug("old id: " + query_id + " output: " + str);
+
+                            //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
+                            //logger.info("id: " + query_id + " output: " +  str);
+                            //System.out.println(str);
+                        } catch (Exception ex) {
+                            System.out.println("ESPEREngine : Error : " + ex.toString());
+                        }
                     }
                 }
-
-
-            }
-            if (oldEvents != null)
-            {
-                System.out.println("Old Event received: " + oldEvents[0].getUnderlying());
-                //count++;
             }
         }
+    }
+
+    private void sendCPMessage(String key, String value, String ppId) {
+        MsgEvent me = new MsgEvent(MsgEvent.Type.CONFIG, pp.cpId, pp.copId, ppId, "");
+        me.setParam(key,value);
+        pp.sendout_cp.sendMessage(pp.cpId,me);
+        //sendout.sendMessage(copId,me);
+
     }
 
     public boolean addQuery(String query_id, String query)

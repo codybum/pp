@@ -33,6 +33,13 @@ public class Launcher extends CPlugin {
 
             ppThread.start();
 
+            /*
+            PPEngine pp2 = new PPEngine(this);
+            for(int i = 0; i < 100; i++) {
+                new Thread(new PPEngine(this)).start();
+            }
+            */
+
         }
         catch(Exception ex) {
             System.out.println("start() " + getStringFromError(ex));
@@ -43,7 +50,7 @@ public class Launcher extends CPlugin {
         try {
 
 
-            int pathStage = config.getIntegerParam("path_stage",1);
+            int pathStage = config.getIntegerParam("path_stage",2);
             logger.debug("[pathStage] == {}", pathStage);
             switch (pathStage) {
                 case 1:
@@ -51,13 +58,15 @@ public class Launcher extends CPlugin {
                     PPEngine pp = new PPEngine(this);
                     ppThread = new Thread(pp);
 
+                    /*
+
                     CPEngine cp_test = new CPEngine(this);
                     new Thread(cp_test).start();
 
 
                     COPEngine cop_test = new COPEngine(this);
                     new Thread(cop_test).start();
-
+                    */
                     break;
                 case 2:
                     logger.debug("Starting COP Thread");

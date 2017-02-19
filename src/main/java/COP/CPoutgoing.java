@@ -43,7 +43,9 @@ public class CPoutgoing {
 
             Channel channel = channelMap.get(queueName);
             channel.basicPublish("", queueName, null, message.getBytes("UTF-8"));
-            logger.info("Send to: " + queueName + " [x] Sent '" + message + "'");
+            logger.debug("Send to: " + queueName + " [x] Sent '" + message + "'");
+			logger.info("Send to: " + queueName);
+
 
 		}
 		catch(Exception ex) {

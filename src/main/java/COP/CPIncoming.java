@@ -27,7 +27,7 @@ public class CPIncoming {
 	            channel = pp.cpFactory.newConnection().createChannel();
 
 				channel.queueDeclare(pp.copId , false, false, false, null);
-				logger.info(" [*] Waiting for messages in " + pp.copId);
+				logger.info(" [*] Waiting for messages in CP " + pp.copId);
 
                 //Consumer consumer = new DefaultConsumer(channel);
 
@@ -39,9 +39,10 @@ public class CPIncoming {
 					public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
 							throws IOException {
 						String message = new String(body, "UTF-8");
-                        logger.info(" [x] Received '" + message + "'");
+						logger.debug(pp.copId + " [x] Received '" + message + "'");
+						logger.info(pp.copId + " [x] Received");
 
-                        //System.exit(0);
+						//System.exit(0);
 					}
 				};
 

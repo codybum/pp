@@ -43,10 +43,12 @@ public class CPIncoming {
 					public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
 							throws IOException {
 						String message = new String(body, "UTF-8");
-                        logger.info(pp.cpId + " [x] Received '" + message + "'");
-						MsgEvent me = gson.fromJson(message, MsgEvent.class);
+                        MsgEvent me = gson.fromJson(message, MsgEvent.class);
+						logger.debug(pp.cpId + " [x] Received '" + message + "'");
+						logger.info(pp.cpId + " [x] Received CP: " + me.getMsgRegion() + " COP: " + me.getMsgAgent() + " PP: " + me.getMsgPlugin() );
+
 						me.setMsgRegion(pp.cpId);
-						pp.sendout.sendMessage(me.getMsgAgent(),me);
+						//pp.sendout.sendMessage(me.getMsgAgent(),me);
 
 						//gPayload me = gson.fromJson(json, gPayload.class);
 

@@ -23,13 +23,15 @@ public class CPEngine implements Runnable {
 		this.logger = new CLogger(CPEngine.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
 		this.plugin = plugin;
 
-        cpId = "cp-" + "0";
+        //cpId = "cp-" + "0";
+		cpId = plugin.getConfig().getStringParam("cp_id","cp-0");
 
-        //copQueue = "pp-" + ppId;
+
+		//copQueue = "pp-" + ppId;
         ppFactory = new ConnectionFactory();
-        ppFactory.setHost(plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1"));
-        ppFactory.setUsername(plugin.getConfig().getStringParam("pp_amqp_username","admin"));
-        ppFactory.setPassword(plugin.getConfig().getStringParam("pp_amqp_password","cody01"));
+        ppFactory.setHost(plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1"));
+        ppFactory.setUsername(plugin.getConfig().getStringParam("cp_amqp_username","admin"));
+        ppFactory.setPassword(plugin.getConfig().getStringParam("cp_amqp_password","cody01"));
         ppFactory.setConnectionTimeout(10000);
 
 	}

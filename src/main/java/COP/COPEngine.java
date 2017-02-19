@@ -34,8 +34,13 @@ public class COPEngine implements Runnable {
 		this.cepQueue = new ConcurrentLinkedQueue();
 
 		//copId = UUID.randomUUID().toString();
-		copId = "cop-" + "0";
-		cpId = "cp-" + "0";
+		//copId = "cop-" + "0";
+        copId = plugin.getConfig().getStringParam("cop_id","cop-0");
+		cpId = plugin.getConfig().getStringParam("cp_id","cp-0");
+        logger.info("cop_id: " + copId);
+        logger.info("cp_id: " + cpId);
+
+        //cpId = "cp-" + "0";
 
 		//copQueue = "pp-" + ppId;
 		ppFactory = new ConnectionFactory();
@@ -56,20 +61,27 @@ public class COPEngine implements Runnable {
 	 public void run() {
 	        try
 	        {
-				PPIncoming incoming = new PPIncoming(plugin,this);
-				incoming.start();
-
-				/*
-				CPIncoming cIncoming = new CPIncoming(plugin,this);
-				cIncoming.start();
-				*/
-
-				sendout_pp = new PPoutgoing(plugin,this);
-				sendout_cp = new CPoutgoing(plugin,this);
-
 				ESPEREngine ee = new ESPEREngine(plugin,this);
 				Thread et = new Thread(ee);
 				et.start();
+				logger.info("ESPER Engine Started.");
+
+				PPIncoming incoming = new PPIncoming(plugin,this);
+				incoming.start();
+                logger.info("PP Incoming Started.");
+
+
+				CPIncoming cIncoming = new CPIncoming(plugin,this);
+				cIncoming.start();
+                logger.info("CP Incoming Started.");
+
+
+                sendout_pp = new PPoutgoing(plugin,this);
+                logger.info("PP OutGoing Started.");
+
+                sendout_cp = new CPoutgoing(plugin,this);
+                logger.info("CP OutGoing Started.");
+
 
                 while(plugin.isActive) {
 
