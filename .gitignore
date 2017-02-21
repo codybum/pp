@@ -1,1 +1,6 @@
 # Created by .ignore support plugin (hsz.mobi)
+.idea/libraries/Maven__commons_logging_commons_logging_1_1_1.xml
+.idea/workspace.xml
+src/main/resources/
+src/test/
+target/
