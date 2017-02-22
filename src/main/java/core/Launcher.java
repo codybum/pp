@@ -69,6 +69,7 @@ public class Launcher extends CPlugin {
                     //eat exception
                 }
                 if(portOpen == false) {
+                    logger.info("Checking Host: " + hostName + " Port: " + port);
                     Thread.sleep(1000);
                 }
             count++;
