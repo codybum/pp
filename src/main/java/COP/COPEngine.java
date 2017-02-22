@@ -42,14 +42,22 @@ public class COPEngine implements Runnable {
 
 		//copQueue = "pp-" + ppId;
 		ppFactory = new ConnectionFactory();
-		ppFactory.setHost(plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1"));
-		ppFactory.setUsername(plugin.getConfig().getStringParam("pp_amqp_username","admin"));
+		//ppFactory.setHost(plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1"));
+        String pphostName = plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1");
+        ppFactory.setHost(pphostName);
+        plugin.isReachable(pphostName,"5672");
+
+        ppFactory.setUsername(plugin.getConfig().getStringParam("pp_amqp_username","admin"));
 		ppFactory.setPassword(plugin.getConfig().getStringParam("pp_amqp_password","cody01"));
 		ppFactory.setConnectionTimeout(10000);
 
 		cpFactory = new ConnectionFactory();
-		cpFactory.setHost(plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1"));
-		cpFactory.setUsername(plugin.getConfig().getStringParam("cp_amqp_username","admin"));
+		//cpFactory.setHost(plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1"));
+        String cphostName = plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1");
+        cpFactory.setHost(cphostName);
+        plugin.isReachable(cphostName,"5672");
+
+        cpFactory.setUsername(plugin.getConfig().getStringParam("cp_amqp_username","admin"));
 		cpFactory.setPassword(plugin.getConfig().getStringParam("cp_amqp_password","cody01"));
 		cpFactory.setConnectionTimeout(10000);
 

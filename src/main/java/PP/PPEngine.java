@@ -32,7 +32,9 @@ public class PPEngine implements Runnable {
 		copId = plugin.getConfig().getStringParam("cop_id","cop-0");
         //copQueue = "pp-" + ppId;
         ppFactory = new ConnectionFactory();
-        ppFactory.setHost(plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1"));
+        String hostName = plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1");
+        ppFactory.setHost(hostName);
+        plugin.isReachable(hostName,"5672");
         logger.info("pp_amqp_host: " + plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1"));
         ppFactory.setUsername(plugin.getConfig().getStringParam("pp_amqp_username","admin"));
         ppFactory.setPassword(plugin.getConfig().getStringParam("pp_amqp_password","cody01"));

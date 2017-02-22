@@ -11,7 +11,11 @@ import org.apache.commons.configuration.SubnodeConfiguration;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+
 import PP.*;
 import COP.*;
 import CP.*;
@@ -44,6 +48,23 @@ public class Launcher extends CPlugin {
         catch(Exception ex) {
             System.out.println("start() " + getStringFromError(ex));
         }
+    }
+
+    public boolean isReachable(String hostName, String port) {
+        boolean portOpen = false;
+        try {
+            Socket sock = new Socket();
+            int timeOut = (int) TimeUnit.SECONDS.toMillis(10); // 5 sec wait period
+            sock.connect(new InetSocketAddress(hostName, Integer.parseInt(port)), timeOut);
+            if(sock.isConnected()) {
+                portOpen = true;
+                sock.close();
+            }
+        }
+        catch(Exception ex) {
+            logger.error("isReachable : " + ex.getMessage());
+        }
+        return portOpen;
     }
 
     public void commInit() {

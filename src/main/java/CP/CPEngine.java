@@ -35,8 +35,12 @@ public class CPEngine implements Runnable {
 
 		//copQueue = "pp-" + ppId;
         ppFactory = new ConnectionFactory();
-        ppFactory.setHost(plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1"));
-        ppFactory.setUsername(plugin.getConfig().getStringParam("cp_amqp_username","admin"));
+        //ppFactory.setHost(plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1"));
+		String hostName = plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1");
+		ppFactory.setHost(hostName);
+		plugin.isReachable(hostName,"5672");
+
+		ppFactory.setUsername(plugin.getConfig().getStringParam("cp_amqp_username","admin"));
         ppFactory.setPassword(plugin.getConfig().getStringParam("cp_amqp_password","cody01"));
         ppFactory.setConnectionTimeout(10000);
 
