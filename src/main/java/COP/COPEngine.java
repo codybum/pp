@@ -53,7 +53,7 @@ public class COPEngine implements Runnable {
 
 		cpFactory = new ConnectionFactory();
 		//cpFactory.setHost(plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1"));
-        String cphostName = plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1");
+        String cphostName = plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1");
         cpFactory.setHost(cphostName);
         plugin.isReachable(cphostName,"5672");
 
