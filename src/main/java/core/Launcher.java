@@ -53,12 +53,19 @@ public class Launcher extends CPlugin {
     public boolean isReachable(String hostName, String port) {
         boolean portOpen = false;
         try {
-            Socket sock = new Socket();
-            int timeOut = (int) TimeUnit.SECONDS.toMillis(10); // 5 sec wait period
-            sock.connect(new InetSocketAddress(hostName, Integer.parseInt(port)), timeOut);
-            if(sock.isConnected()) {
-                portOpen = true;
-                sock.close();
+            int count = 0;
+            while((count < 10) && (portOpen == false)) {
+                Socket sock = new Socket();
+                int timeOut = (int) TimeUnit.SECONDS.toMillis(5); // 5 sec wait period
+                sock.connect(new InetSocketAddress(hostName, Integer.parseInt(port)), timeOut);
+                if (sock.isConnected()) {
+                    portOpen = true;
+                    sock.close();
+                }
+                else {
+                    Thread.sleep(1000);
+                }
+            count++;
             }
         }
         catch(Exception ex) {
