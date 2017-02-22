@@ -14,6 +14,7 @@ import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import PP.*;
@@ -55,14 +56,19 @@ public class Launcher extends CPlugin {
         try {
             int count = 0;
             while((count < 10) && (portOpen == false)) {
-                Socket sock = new Socket();
-                int timeOut = (int) TimeUnit.SECONDS.toMillis(5); // 5 sec wait period
-                sock.connect(new InetSocketAddress(hostName, Integer.parseInt(port)), timeOut);
-                if (sock.isConnected()) {
-                    portOpen = true;
-                    sock.close();
+                try {
+                    Socket sock = new Socket();
+                    int timeOut = (int) TimeUnit.SECONDS.toMillis(5); // 5 sec wait period
+                    sock.connect(new InetSocketAddress(hostName, Integer.parseInt(port)), timeOut);
+                    if (sock.isConnected()) {
+                        portOpen = true;
+                        sock.close();
+                    }
                 }
-                else {
+                catch(Exception exx) {
+                    //eat exception
+                }
+                if(portOpen == false) {
                     Thread.sleep(1000);
                 }
             count++;
