@@ -61,6 +61,7 @@ public class COPEngine implements Runnable {
 		cpFactory.setPassword(plugin.getConfig().getStringParam("cp_amqp_password","cody01"));
 		cpFactory.setConnectionTimeout(10000);
 
+		//g
 
 
 	}
