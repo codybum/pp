@@ -46,7 +46,7 @@ public class CPIncoming {
                         MsgEvent me = gson.fromJson(message, MsgEvent.class);
 						logger.debug(pp.cpId + " [x] Received '" + message + "'");
 						logger.info(pp.cpId + " [x] Received CP: " + me.getMsgRegion() + " COP: " + me.getMsgAgent() + " PP: " + me.getMsgPlugin() );
-                        pp.cepQueue.offer(me);
+                        //pp.cepQueue.offer(me);
 
 						//me.setMsgRegion(pp.cpId);
 						//pp.sendout.sendMessage(me.getMsgAgent(),me);

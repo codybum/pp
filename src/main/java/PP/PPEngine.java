@@ -71,7 +71,7 @@ public class PPEngine implements Runnable {
         String sensorData = null;
         try {
             StringBuilder sb = new StringBuilder();
-            for(int i = 0; i < 1000; i++) {
+            for(int i = 0; i < 10; i++) {
 
                 int sensorValue = ThreadLocalRandom.current().nextInt(0, 10 + 1);
 
