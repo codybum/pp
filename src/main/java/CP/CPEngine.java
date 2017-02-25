@@ -28,6 +28,11 @@ public class CPEngine implements Runnable {
 
     public ConcurrentLinkedQueue<MsgEvent> cepQueue;
 
+    public String queuePipeline = null;
+    public String copPipeline = null;
+    public String ppPipeline = null;
+
+
     public int state = 0;
 
 	public CPEngine(Launcher plugin)
@@ -62,7 +67,7 @@ public class CPEngine implements Runnable {
             Map<String,String> ri = at.getControllerResourceInventory();
             logger.info("cpu core count: " + ri.get("cpu_core_count"));
             if(ri.get("cpu_core_count").equals("160")) {
-                String queuePipeline = at.addQueues();
+                queuePipeline = at.addQueues();
                 int count = 0;
                 String status_code = at.getGpipelineStatus(queuePipeline);
                 while((count < 300) && (!status_code.equals("10"))) {
@@ -84,7 +89,7 @@ public class CPEngine implements Runnable {
 
     private void launchCOP() {
         try {
-            String copPipeline = at.addCOP();
+            copPipeline = at.addCOP();
             int count = 0;
             String status_code = at.getGpipelineStatus(copPipeline);
             while((count < 300) && (!status_code.equals("10"))) {
@@ -106,7 +111,7 @@ public class CPEngine implements Runnable {
 
     private void launchPP() {
         try {
-            String ppPipeline = at.addPP();
+            ppPipeline = at.addPP();
             int count = 0;
             String status_code = at.getGpipelineStatus(ppPipeline);
             while((count < 300) && (!status_code.equals("10"))) {
@@ -129,6 +134,9 @@ public class CPEngine implements Runnable {
     private void noOP() {
         try {
             logger.info("Current State: " + state);
+            logger.info("queuePipeline " + queuePipeline + " status_code: " + at.getGpipelineStatus(queuePipeline));
+            logger.info("copPipeline " + copPipeline + " status_code: " + at.getGpipelineStatus(copPipeline));
+            logger.info("ppPipeline " + ppPipeline + " status_code: " + at.getGpipelineStatus(ppPipeline));
         }
         catch(Exception ex) {
             logger.error("launchQueue: " + ex.getMessage());
