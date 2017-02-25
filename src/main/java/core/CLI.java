@@ -16,7 +16,7 @@ public class CLI {
 	{
         try {
 
-            String configFile = "/Users/vcbumg2/Downloads/crescodbtest/config.ini";
+            String configFile = "/Users/vcbumg2/ResearchWorx/pp/config.ini";
             Config config = config = new Config(configFile);
             Launcher la = new Launcher();
 

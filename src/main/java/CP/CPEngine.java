@@ -2,11 +2,14 @@ package CP;
 
 
 import COP.COPESPEREngine;
+import app.AppTools;
+import channels.ControllerChannel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.researchworx.cresco.library.messaging.MsgEvent;
 import com.researchworx.cresco.library.utilities.CLogger;
 import core.Launcher;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,11 +23,19 @@ public class CPEngine implements Runnable {
     public ConnectionFactory ppFactory;
     public String cpId = null;
 
-	public ConcurrentLinkedQueue<MsgEvent> cepQueue;
+    public ControllerChannel cc;
+    public AppTools at;
+
+    public ConcurrentLinkedQueue<MsgEvent> cepQueue;
+
+    public int state = 0;
 
 	public CPEngine(Launcher plugin)
 	{
-		this.logger = new CLogger(CPEngine.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
+        cc = new ControllerChannel(plugin); //methods to communicate with global controller
+        at = new AppTools(plugin,this);
+
+        this.logger = new CLogger(CPEngine.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
 		this.plugin = plugin;
 
 		this.cepQueue = new ConcurrentLinkedQueue();
@@ -45,6 +56,94 @@ public class CPEngine implements Runnable {
         ppFactory.setConnectionTimeout(10000);
 
 	}
+
+	private void launchQueue() {
+        try {
+            Map<String,String> ri = at.getControllerResourceInventory();
+            logger.info("cpu core count: " + ri.get("cpu_core_count"));
+            if(ri.get("cpu_core_count").equals("160")) {
+                String queuePipeline = at.addQueues();
+                int count = 0;
+                String status_code = at.getGpipelineStatus(queuePipeline);
+                while((count < 300) && (!status_code.equals("10"))) {
+                    logger.info("Waiting on queuePipeline " + queuePipeline + " status_code: " + status_code);
+                    Thread.sleep(5000);
+                    status_code = at.getGpipelineStatus(queuePipeline);
+                }
+                if(status_code.equals("10")) {
+                    state = 1;
+                } else {
+                    state = 5;
+                }
+            }
+        }
+        catch(Exception ex) {
+            logger.error("launchQueue: " + ex.getMessage());
+        }
+    }
+
+    private void launchCOP() {
+        try {
+            String copPipeline = at.addCOP();
+            int count = 0;
+            String status_code = at.getGpipelineStatus(copPipeline);
+            while((count < 300) && (!status_code.equals("10"))) {
+                logger.info("Waiting on COPPipeline " + copPipeline + " status_code: " + status_code);
+                Thread.sleep(5000);
+                status_code = at.getGpipelineStatus(copPipeline);
+            }
+            if(status_code.equals("10")) {
+                state = 2;
+            } else {
+                state = 5;
+            }
+
+        }
+        catch(Exception ex) {
+            logger.error("launchCOP: " + ex.getMessage());
+        }
+    }
+
+    private void launchPP() {
+        try {
+            String ppPipeline = at.addPP();
+            int count = 0;
+            String status_code = at.getGpipelineStatus(ppPipeline);
+            while((count < 300) && (!status_code.equals("10"))) {
+                logger.info("Waiting on PPPipeline " + ppPipeline + " status_code: " + status_code);
+                Thread.sleep(5000);
+                status_code = at.getGpipelineStatus(ppPipeline);
+            }
+            if(status_code.equals("10")) {
+                state = 10;
+            } else {
+                state = 5;
+            }
+
+        }
+        catch(Exception ex) {
+            logger.error("launchPP: " + ex.getMessage());
+        }
+    }
+
+    private void noOP() {
+        try {
+            logger.info("Current State: " + state);
+        }
+        catch(Exception ex) {
+            logger.error("launchQueue: " + ex.getMessage());
+        }
+    }
+
+    private void failureState() {
+        try {
+
+        }
+        catch(Exception ex) {
+            logger.error("launchQueue: " + ex.getMessage());
+        }
+    }
+
 	 public void run() {
 	        try
 	        {
@@ -59,6 +158,26 @@ public class CPEngine implements Runnable {
                 sendout = new CPoutgoing(plugin,this);
 
                 while(plugin.isActive) {
+
+                    switch (state) {
+                        case 0:
+                            launchQueue();
+                            break;
+                        case 1:
+                            launchCOP();
+                            break;
+                        case 2:
+                            launchPP();
+                            break;
+                        case 5:
+                            failureState();
+                            break;
+                        case 10:
+                            noOP();
+                            break;
+                        default:
+                            noOP();
+                    }
 
                 	/*
                     StringBuilder sb = new StringBuilder();

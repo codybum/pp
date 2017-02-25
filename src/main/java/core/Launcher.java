@@ -27,6 +27,8 @@ public class Launcher extends CPlugin {
     public boolean isActive = true;
     public int hour = 0;
 
+    private PerfMonitor perfMonitor;
+
     private Thread ppThread = null;
     public void start() {
 
@@ -38,6 +40,10 @@ public class Launcher extends CPlugin {
             commInit();
 
             ppThread.start();
+
+            perfMonitor = new PerfMonitor(this);
+            perfMonitor.start();
+            logger.info("Container performance monitoring initialized");
 
             setExec(new Executor(this));
 
