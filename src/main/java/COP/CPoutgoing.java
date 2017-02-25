@@ -4,6 +4,8 @@ package COP;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ShutdownListener;
+import com.rabbitmq.client.ShutdownSignalException;
 import com.researchworx.cresco.library.messaging.MsgEvent;
 import com.researchworx.cresco.library.utilities.CLogger;
 import core.Launcher;
@@ -42,12 +44,17 @@ public class CPoutgoing {
             String message = gson.toJson(me);
 
             Channel channel = channelMap.get(queueName);
-			channel.basicQos(1);
+            channel.basicQos(1);
 			channel.basicPublish("", queueName, null, message.getBytes("UTF-8"));
             logger.debug("Send to: " + queueName + " [x] Sent '" + message + "'");
 			//logger.info("Send to: " + queueName);
 
-
+			channel.addShutdownListener(new ShutdownListener() {
+				public void shutdownCompleted(ShutdownSignalException cause)
+				{
+        			logger.error("CONNECTION SHUTDOWN!!! " + cause.getMessage() + " by applicaiton: " + cause.isInitiatedByApplication());
+				}
+			});
 		}
 		catch(Exception ex) {
 			logger.error(plugin.getStringFromError(ex));

@@ -155,6 +155,8 @@ public class CPESPEREngine implements Runnable {
                                     cepRT.sendEvent(sensorMap,"sensorMap");
                                 }
                                 String car_data = me.getParam("car_data");
+                                logger.error("car_data: " + car_data);
+                                /*
                                 String[] carArray = car_data.split(",");
                                 for(String carEntry : carArray) {
                                     String[] carEntrySplit = carEntry.split(":");
@@ -165,6 +167,7 @@ public class CPESPEREngine implements Runnable {
                                     carMap.put("carValue", Integer.parseInt(carEntrySplit[1]));
                                     cepRT.sendEvent(carMap,"carMap");
                                 }
+                                */
 
                             }
                             else {
