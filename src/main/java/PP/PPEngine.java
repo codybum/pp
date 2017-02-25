@@ -38,7 +38,7 @@ public class PPEngine implements Runnable {
         logger.info("pp_amqp_host: " + plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1"));
         ppFactory.setUsername(plugin.getConfig().getStringParam("pp_amqp_username","admin"));
         ppFactory.setPassword(plugin.getConfig().getStringParam("pp_amqp_password","cody01"));
-        ppFactory.setConnectionTimeout(10000);
+        //ppFactory.setConnectionTimeout(10000);
 
 	}
 	 public void run() {

@@ -58,7 +58,7 @@ public class CPEngine implements Runnable {
 
 		ppFactory.setUsername(plugin.getConfig().getStringParam("cp_amqp_username","admin"));
         ppFactory.setPassword(plugin.getConfig().getStringParam("cp_amqp_password","cody01"));
-        ppFactory.setConnectionTimeout(10000);
+        //ppFactory.setConnectionTimeout(10000);
 
 	}
 
