@@ -29,7 +29,7 @@ public class PPIncoming {
 	        try 
 	        {
 	            channel = pp.ppFactory.newConnection().createChannel();
-
+				channel.basicQos(1);
 				channel.queueDeclare(pp.ppId , false, false, false, null);
                 logger.info(" [*] Waiting for messages in " + pp.ppId);
 

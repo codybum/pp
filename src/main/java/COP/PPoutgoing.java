@@ -58,7 +58,8 @@ public class PPoutgoing {
 		boolean isCreated = false;
 		try {
 		    Channel channel = pp.ppFactory.newConnection().createChannel();
-		    channel.queueDeclare(queueName, false, false, false, null);
+            channel.basicQos(1);
+            channel.queueDeclare(queueName, false, false, false, null);
 		    channelMap.put(queueName,channel);
 		    isCreated = true;
 		}

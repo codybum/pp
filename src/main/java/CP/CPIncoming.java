@@ -29,8 +29,8 @@ public class CPIncoming {
 	        try 
 	        {
 	            channel = pp.ppFactory.newConnection().createChannel();
-
-				channel.queueDeclare(pp.cpId , false, false, false, null);
+                channel.basicQos(1);
+                channel.queueDeclare(pp.cpId , false, false, false, null);
                 logger.info(" [*] Waiting for messages in " + pp.cpId);
 
                 //Consumer consumer = new DefaultConsumer(channel);

@@ -42,7 +42,8 @@ public class CPoutgoing {
             String message = gson.toJson(me);
 
             Channel channel = channelMap.get(queueName);
-            channel.basicPublish("", queueName, null, message.getBytes("UTF-8"));
+			channel.basicQos(1);
+			channel.basicPublish("", queueName, null, message.getBytes("UTF-8"));
             logger.debug("Send to: " + queueName + " [x] Sent '" + message + "'");
 			//logger.info("Send to: " + queueName);
 
