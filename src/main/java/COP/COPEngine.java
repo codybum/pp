@@ -49,7 +49,8 @@ public class COPEngine implements Runnable {
 
         ppFactory.setUsername(plugin.getConfig().getStringParam("pp_amqp_username","admin"));
 		ppFactory.setPassword(plugin.getConfig().getStringParam("pp_amqp_password","cody01"));
-		ppFactory.setConnectionTimeout(10000);
+		//ppFactory.setConnectionTimeout(10_000);
+
 
 		cpFactory = new ConnectionFactory();
 		//cpFactory.setHost(plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1"));
@@ -59,7 +60,7 @@ public class COPEngine implements Runnable {
 
         cpFactory.setUsername(plugin.getConfig().getStringParam("cp_amqp_username","admin"));
 		cpFactory.setPassword(plugin.getConfig().getStringParam("cp_amqp_password","cody01"));
-		cpFactory.setConnectionTimeout(10000);
+		//cpFactory.setConnectionTimeout(10_000);
 
 		//g
 
