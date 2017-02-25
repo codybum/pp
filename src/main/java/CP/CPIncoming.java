@@ -20,7 +20,7 @@ public class CPIncoming {
 
 	public CPIncoming(Launcher plugin, CPEngine pp)
 	{
-		this.logger = new CLogger(CPIncoming.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
+		this.logger = new CLogger(CPIncoming.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Debug);
 		this.plugin = plugin;
 		this.pp = pp;
 		gson = new GsonBuilder().create();

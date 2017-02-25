@@ -41,7 +41,7 @@ public class COPESPEREngine implements Runnable {
 
     public COPESPEREngine(Launcher plugin, COPEngine pp)
     {
-        this.logger = new CLogger(CPoutgoing.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
+        this.logger = new CLogger(CPoutgoing.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Debug);
         this.plugin = plugin;
         this.pp = pp;
 

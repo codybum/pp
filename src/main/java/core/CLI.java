@@ -59,9 +59,10 @@ public class CLI {
         //String className = log.getParam("full_class");
         String logMessage = "[" + log.getParam("src_plugin") + "]";
         logMessage = logMessage + " " + log.getMsgBody();
-
         if(log.getParam("log_level") == null) {
-            System.out.println(logMessage);
+            if((!log.getMsgType().equals(MsgEvent.Type.WATCHDOG)) && (!log.getMsgType().equals(MsgEvent.Type.KPI))) {
+                System.out.println(logMessage);
+            }
             return;
         }
 
