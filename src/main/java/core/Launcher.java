@@ -25,6 +25,7 @@ import CP.*;
 public class Launcher extends CPlugin {
 
     public boolean isActive = true;
+    public int hour = 0;
 
     private Thread ppThread = null;
     public void start() {
@@ -37,6 +38,8 @@ public class Launcher extends CPlugin {
             commInit();
 
             ppThread.start();
+
+            setExec(new Executor(this));
 
             /*
             PPEngine pp2 = new PPEngine(this);

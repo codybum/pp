@@ -49,19 +49,12 @@ public class PPEngine implements Runnable {
 
                 sendout = new PPoutgoing(plugin,this);
 
-                int hour = 0;
-
                 while(plugin.isActive) {
 
-
-                    if(hour == 24) {
-                        hour = 0;
-                    }
-                    hour++;
                     //logger.info("hour: " + hour);
                     MsgEvent me = new MsgEvent(MsgEvent.Type.CONFIG, null, copId, ppId, "");
                     me.setParam("sensor_data",genSensorData());
-                    me.setParam("car_data",genCarData(hour));
+                    me.setParam("car_data",genCarData(plugin.hour));
                     sendout.sendMessage(copId,me);
                     Thread.sleep(5000);
                 }
