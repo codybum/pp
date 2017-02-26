@@ -178,7 +178,7 @@ public class PPEngine implements Runnable {
 
         }
         catch(Exception ex) {
-            logger.error("genSensorData " + ex.getMessage());
+            logger.error("genCarData " + ex.getMessage());
         }
         return carData;
     }

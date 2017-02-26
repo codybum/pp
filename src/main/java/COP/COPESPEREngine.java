@@ -41,7 +41,7 @@ public class COPESPEREngine implements Runnable {
 
     public COPESPEREngine(Launcher plugin, COPEngine pp)
     {
-        this.logger = new CLogger(CPoutgoing.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Debug);
+        this.logger = new CLogger(CPoutgoing.class, plugin.getMsgOutQueue(), plugin.getRegion(), plugin.getAgent(), plugin.getPluginID(), CLogger.Level.Info);
         this.plugin = plugin;
         this.pp = pp;
 
@@ -116,15 +116,26 @@ public class COPESPEREngine implements Runnable {
 
             //addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time_batch(5 sec) group by sensorId output snapshot every 1 seconds");
 
-            addQuery("sensor_data", "select ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time_batch(5 sec) group by sensorId output snapshot every 1 seconds");
+            //addQuery("sensor_data", "select ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time_batch(15 sec) group by sensorId output snapshot every 5 seconds");
 
-            addQuery("sensor_alert", "select ppId, sensorId, sensorValue from sensorMap where sensorValue > 90");
+            //addQuery("sensor_alert", "select ppId, sensorId, sensorValue from sensorMap where sensorValue > 90");
 
-            addQuery("car_data", "select * from carMap");
+            //ok
 
+            addQuery("sensor_alert", "select ppId, sensorId, sensorValue from sensorMap where sensorValue = 100");
+            addQuery("car_data", "select irstream distinct ppId, avg(carValue) as sps from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
+
+            //ok
+
+            //addQuery("sensor_data", "select irstream distinct ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.std:groupwin(ppId).win:time_batch(15 sec) group by ppId output snapshot every 5 seconds");
+            //addQuery("sensor_data", "select ppId, sensorId, avg(sensorValue, group_by:sensorId) as avgValue from sensorMap.win:time_batch(15 sec) group by ppId output snapshot every 5 seconds");
+
+
+            //select count(*) as fps from netFlow.win:time_batch(1sec)
 
             //addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time_batch(5 sec) group by ppId output snapshot every 1 seconds");
 
+            //addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time_batch(5 sec) group by ppId output snapshot every 1 seconds");
 
 
             //esper_querystring = "select params('sensor_data') from MsgEvent";
@@ -166,9 +177,10 @@ public class COPESPEREngine implements Runnable {
                                         sensorMap.put("sensorId",sensorEntrySplit[0]);
                                         sensorMap.put("sensorValue", Integer.parseInt(sensorEntrySplit[1]));
                                         cepRT.sendEvent(sensorMap,"sensorMap");
+
                                     }
                                 }
-                                else if(me.getParam("car_data") != null) {
+                                if(me.getParam("car_data") != null) {
 
                                     String car_data = me.getParam("car_data");
                                     String[] carArray = car_data.split(",");
@@ -215,6 +227,7 @@ public class COPESPEREngine implements Runnable {
         public void update(EventBean[] newEvents, EventBean[] oldEvents) {
             if (newEvents != null) {
 
+                /*
                 if (query_id.equals("sensor_data")) {
 
                     StringBuilder sb = new StringBuilder();
@@ -225,7 +238,7 @@ public class COPESPEREngine implements Runnable {
                             String ppId = eb.get("ppId").toString();
                             if (!eventMap.containsKey(ppId)) {
                                 eventMap.put(ppId, new ArrayList<EventBean>());
-                                //logger.error("Create new ppid " + ppId + " thread: " + Thread.currentThread().getId());
+                                logger.error("Create new ppid " + ppId + " thread: " + Thread.currentThread().getId());
                             }
                             eventMap.get(ppId).add(eb);
 
@@ -265,8 +278,62 @@ public class COPESPEREngine implements Runnable {
 
 
                 }
-                else if (query_id.equals("sensor_alert")) {
+                */
+                if (query_id.equals("sensor_data")) {
 
+                    StringBuilder sb = new StringBuilder();
+                    Map<String, List<EventBean>> eventMap = new HashMap<>();
+
+                    for (EventBean eb : newEvents) {
+                        try {
+                            String ppId = eb.get("ppId").toString();
+                            logger.error("Create new ppid " + ppId + " thread: " + Thread.currentThread().getId() + " " + eb.get("sensorId").toString() + " " + eb.get("avgValue").toString());
+
+                            /*
+                            if (!eventMap.containsKey(ppId)) {
+                                eventMap.put(ppId, new ArrayList<EventBean>());
+                                logger.error("Create new ppid " + ppId + " thread: " + Thread.currentThread().getId());
+                            }
+                            eventMap.get(ppId).add(eb);
+                            */
+                        } catch (Exception ex) {
+                            logger.error("COPESPEREngine : Error : " + ex.toString());
+                        }
+
+                    }
+
+
+                    for (Map.Entry<String, List<EventBean>> entry : eventMap.entrySet()) {
+                        String ppId = entry.getKey();
+                        List<EventBean> ppEvents = new ArrayList<>(entry.getValue());
+
+                        for (EventBean eb : ppEvents) {
+                            try {
+                                if (!eventMap.containsKey(ppId)) {
+                                    eventMap.put(ppId, new ArrayList<EventBean>());
+                                }
+                                eventMap.get(ppId).add(eb);
+                                String sensorValue = eb.get("avgValue").toString();
+                                String sensorId = eb.get("sensorId").toString();
+                                sb.append(sensorId + ":" + sensorValue + ",");
+                                //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
+
+                                //logger.info("new id: " + query_id + " output: " + str);
+                                //System.out.println(str);
+                            } catch (Exception ex) {
+                                logger.error("COPESPEREngine : Error : " + ex.toString());
+                            }
+
+                        }
+                        String sensorDataString = sb.toString().substring(0, sb.length() - 1);
+                        logger.debug("new id sensor_data: " + query_id + " output: " + sensorDataString);
+                        sendCPMessage(query_id, sensorDataString, ppId);
+                    }
+
+
+                }
+
+                else if (query_id.equals("sensor_alert")) {
                     for (EventBean eb : newEvents) {
                         try {
                             String ppId = eb.get("ppId").toString();
@@ -274,6 +341,7 @@ public class COPESPEREngine implements Runnable {
                             String sensorId = eb.get("sensorId").toString();
                             String sensorAlertString = sensorId + ":" + sensorValue;
                             sendCPMessage(query_id, sensorAlertString, ppId);
+                            logger.debug("sensor_alert: " + query_id + " output: " + ppId + ":" + sensorAlertString);
 
                         } catch (Exception ex) {
                             logger.error("COPESPEREngine : Error : " + ex.toString());
@@ -285,9 +353,37 @@ public class COPESPEREngine implements Runnable {
                 else if (query_id.equals("car_data")) {
 
                     String ppId = null;
+                    //StringBuilder sb = new StringBuilder();
+                    for (EventBean eb : newEvents) {
+                        try {
+
+                            String carCount = eb.get("sps").toString();
+                            ppId = eb.get("ppId").toString();
+                            //sb.append(ppId + ":" + carCount + ",");
+                            String carDataString = ppId + ":" + carCount;
+                            //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
+                            sendCPMessage(query_id, carDataString, ppId);
+                            logger.debug("car_data: " + query_id + " output: " + ppId + ":" + carCount);
+                            //System.out.println(str);
+                        } catch (Exception ex) {
+                            logger.error("COPESPEREngine : Error : " + ex.toString());
+                        }
+
+                        //String carDataString = sb.toString().substring(0, sb.length() - 1);
+                        //logger.debug("new id car_data: " + query_id + " output: " + carDataString);
+                        //sendCPMessage(query_id, carDataString, ppId);
+                    }
+
+
+                }
+                /*
+                else if (query_id.equals("car_data")) {
+
+                    String ppId = null;
                     StringBuilder sb = new StringBuilder();
                     for (EventBean eb : newEvents) {
                         try {
+
                             String carCount = eb.get("avgValue").toString();
                             ppId = eb.get("ppId").toString();
                             sb.append(ppId + ":" + carCount + ",");
@@ -306,6 +402,7 @@ public class COPESPEREngine implements Runnable {
 
 
                 }
+                */
                 if (oldEvents != null) {
                     for (EventBean eb : oldEvents) {
                         String str = eb.getUnderlying().toString();
