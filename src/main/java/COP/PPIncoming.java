@@ -49,7 +49,10 @@ public class PPIncoming {
                         logger.debug(pp.copId + " [x] Received '" + message + "'");
 						//logger.info(pp.copId + " [x] Received");
 						MsgEvent me = gson.fromJson(message, MsgEvent.class);
-                        if((me.getMsgRegion() == null)) {
+						pp.cepQueue.offer(me);
+                        /*
+
+						if((me.getMsgRegion() == null)) {
                             me.setMsgAgent(pp.copId);
                             //pp.sendout_cp.sendMessage(pp.cpId,me);
                             pp.cepQueue.offer(me);
@@ -57,7 +60,7 @@ public class PPIncoming {
                         else {
                             pp.sendout_pp.sendMessage(me.getMsgPlugin(),me);
                         }
-
+						*/
                         //System.exit(0);
 					}
 				};

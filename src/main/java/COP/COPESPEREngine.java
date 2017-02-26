@@ -108,9 +108,17 @@ public class COPESPEREngine implements Runnable {
 
             //addQuery("0", "select * from sensorMap");
 
-            addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(15 sec) group by sensorId output snapshot every 5 seconds");
 
-            addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
+
+            //addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(15 sec) group by sensorId output snapshot every 5 seconds");
+
+            //addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
+
+            addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(5 sec) group by sensorId output snapshot every 1 seconds");
+
+            addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time(5 sec) group by ppId output snapshot every 1 seconds");
+
+
 
             //esper_querystring = "select params('sensor_data') from MsgEvent";
             //esper_querystring = "select * from sensorMap where sensorValue > 5";
@@ -167,10 +175,9 @@ public class COPESPEREngine implements Runnable {
                                     }
                                 }
 
-
                             }
                             else {
-                                Thread.sleep(1000);
+                                Thread.sleep(100);
                             }
 
                 }
