@@ -23,6 +23,8 @@ public class CPESPEREngine implements Runnable {
     private CLogger logger;
     private CPEngine pp;
 
+    private ConcurrentHashMap<String,COPStatus> copStat;
+
 
     //ESPER
     private static EPRuntime cepRT;
@@ -39,8 +41,9 @@ public class CPESPEREngine implements Runnable {
         this.plugin = plugin;
         this.pp = pp;
 
-        listners = new ConcurrentHashMap<String,CEPListener>();
-        statements = new ConcurrentHashMap<String,EPStatement>();
+        copStat = new ConcurrentHashMap<>();
+        listners = new ConcurrentHashMap<>();
+        statements = new ConcurrentHashMap<>();
         gson = new GsonBuilder().create();
 
         //esper_querystring = "select params('sensor_data') from MsgEvent";
@@ -175,8 +178,8 @@ public class CPESPEREngine implements Runnable {
                                     carMap.put("ppId",me.getMsgPlugin());
                                     carMap.put("copId",me.getMsgAgent());
                                     carMap.put("carValue", Integer.parseInt(car_data[1]));
-                                    logger.error(car_data[1]);
-                                    //cepRT.sendEvent(carMap,"carCountMap");
+                                    //logger.error(car_data[1]);
+                                    cepRT.sendEvent(carMap,"carCountMap");
                                 }
                                 else if(me.getParam("car_speed") != null) {
                                     String[] car_data = me.getParam("car_speed").split(":");
@@ -295,7 +298,12 @@ public class CPESPEREngine implements Runnable {
                         try {
                             String carCount = eb.get("avgValue").toString();
                             copId = eb.get("copId").toString();
-                            logger.info(copId + ":" + carCount);
+                            if(copStat.containsKey(copId)) {
+                                copStat.get(copId).update(carCount);
+                            } else {
+                                copStat.put(copId,new COPStatus(plugin,pp,copId));
+                            }
+
                             //sb.append(copId + ":" + carCount + ",");
                             //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
 

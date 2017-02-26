@@ -155,6 +155,121 @@ public class AppTools {
         return pipelineId;
     }
 
+    public String addCOP(String location) {
+        MsgEvent me = new MsgEvent(MsgEvent.Type.CONFIG, null, null, null, "get resourceinventory inventory");
+        me.setParam("globalcmd", "gpipelinesubmit");
+        me.setParam("tenant_id","0");
+
+        Gson gson = new GsonBuilder().create();
+
+        //public gNode(String type, String node_name, String node_id,Map<String, String> params)
+
+        List<gNode> gNodes = new ArrayList<>();
+
+
+        //String[] locationIds = {"14", "15", "17", "18", "20", "21", "22", "23", "25", "26", "27", "28", "30", "31", "32", "33", "34", "36", "38"};
+        //String[] locationIds = {"14", "15", "17", "18", "20", "21", "22", "23", "25", "26", "27", "28", "30", "31", "32", "33", "34", "36", "38"};
+
+        int count = 0;
+
+        //for(String location: locationIds) {
+            Map<String, String> n0Params = new HashMap<>();
+
+            //path_stage
+            //ppFactory.setHost(plugin.getConfig().getStringParam("pp_amqp_host","127.0.0.1"));
+            //ppFactory.setUsername(plugin.getConfig().getStringParam("pp_amqp_username","admin"));
+            //ppFactory.setPassword(plugin.getConfig().getStringParam("pp_amqp_password","cody01"));
+
+            //cpFactory.setHost(plugin.getConfig().getStringParam("cp_amqp_host","127.0.0.1"));
+            //cpFactory.setUsername(plugin.getConfig().getStringParam("cp_amqp_username","admin"));
+            //cpFactory.setPassword(plugin.getConfig().getStringParam("cp_amqp_password","cody01"));
+
+
+            n0Params.put("pluginname", "cresco-pp");
+            n0Params.put("jarfile", "cresco-pp-1.0-SNAPSHOT.jar");
+            n0Params.put("pp_amqp_host","128.163.202." + location);
+            n0Params.put("cop_id","cop-" + location);
+            n0Params.put("pp_amqp_username","admin");
+            n0Params.put("pp_amqp_password","cody01");
+            n0Params.put("cp_amqp_host","cresco.uky.edu");
+            n0Params.put("cp_amqp_username","admin");
+            n0Params.put("cp_amqp_password","cody01");
+            n0Params.put("path_stage","2");
+            n0Params.put("location", location);
+
+            gNodes.add(new gNode("dummy", "node" + String.valueOf(count), String.valueOf(count), n0Params));
+            count++;
+        //}
+
+        //n0Params.put("pluginname","cresco-container-plugin");
+        //n0Params.put("jarfile","cresco-container-plugin-0.1.0.jar");
+        //n0Params.put("container_image", "gitlab.rc.uky.edu:4567/cresco/cresco-container");
+        //CRESCO_GC_HOST
+        //CRESCO_LOCATION
+        //n0Params.put("e_params","CRESCO_LOCATION=home,CRESCO_AGENT_DISC_TIMEOUT=2000");
+        //n0Params.put("location_region","home");
+        //n0Params.put("location_agent","home");
+        //n0Params.put("location","master");
+
+        /*
+        if(args.length == 3) {
+            n0Params.put("location",args[2]);
+            n0Params.put("e_params","CRESCO_LOCATION=" + args[2] + ",CRESCO_AGENT_DISC_TIMEOUT=2000");
+        }
+        else {
+            n0Params.put("location","home");
+            n0Params.put("e_params","CRESCO_LOCATION=home,CRESCO_AGENT_DISC_TIMEOUT=2000");
+        }
+        */
+
+        /*
+        if(args[1] != null) {
+            int count = Integer.parseInt(args[1]);
+            for(int i = 0; i < count; i++) {
+                gNodes.add(new gNode("dummy", "node" + String.valueOf(i), String.valueOf(i), n0Params));
+            }
+        }
+        else {
+            gNodes.add(new gNode("dummy", "node0", "0", n0Params));
+        }
+        */
+
+        //gNode n0 = new gNode("dummy", "node0", "0", n0Params);
+
+        //List<gNode> gNodes = new ArrayList<>();
+        //gNodes.add(n0);
+
+        gEdge e0 = new gEdge("0","1000000","1000000");
+
+        List<gEdge> gEdges = new ArrayList<>();
+        gEdges.add(e0);
+
+        gPayload gpay = new gPayload(gNodes,gEdges);
+        gpay.pipeline_id = "0";
+        gpay.pipeline_name = "demo_pipeline";
+
+        String compressedGpay = DatatypeConverter.printBase64Binary(stringCompress(gson.toJson(gpay)));
+
+        me.setParam("gpipeline_compressed",String.valueOf(Boolean.TRUE));
+
+        me.setParam("gpipeline",compressedGpay);
+        //gPayload me = gson.fromJson(json, gPayload.class);
+        //System.out.println(p);
+        //return gson.toJson(gpay);
+
+        System.out.println(me.getParams().toString());
+
+        //me = CLI.cc.sendMsgEventReturn(me);
+
+        me = cp.cc.sendJSONReturn("/addgpipeline",gson.toJson(me));
+
+        //ce.setParam("gpipeline_id",gpay.pipeline_id);
+        //System.out.println(returnString);
+        //System.out.println("SUBMITTED");
+        //System.out.println("PipelineId =" +  me.getParam("gpipeline_id"));
+        return me.getParam("gpipeline_id");
+    }
+
     public String addCOP() {
         MsgEvent me = new MsgEvent(MsgEvent.Type.CONFIG, null, null, null, "get resourceinventory inventory");
         me.setParam("globalcmd", "gpipelinesubmit");
