@@ -33,6 +33,9 @@ public class COPStatus {
 	  public void update(String carCount) {
 		 if(!inAction) {
 		 	inAction = true;
+
+             logger.info( copId + ":" + carCount);
+
 			 if (Float.parseFloat(carCount) > 300.0) {
 				 if (pipelineId == null) {
 					 //pipelineId = cp.at.addCOP(copId);
