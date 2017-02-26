@@ -351,7 +351,7 @@ public class COPESPEREngine implements Runnable {
                     }
 
                 }
-                else if (query_id.equals("car_speed")) {
+                else if (query_id.equals("car_count")) {
 
                     String ppId = null;
                     //StringBuilder sb = new StringBuilder();
@@ -364,7 +364,7 @@ public class COPESPEREngine implements Runnable {
                             String carDataString = ppId + ":" + carCount;
                             //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
                             sendCPMessage(query_id, carDataString, ppId);
-                            logger.debug("car_data: " + query_id + " output: " + ppId + ":" + carCount);
+                            logger.debug("car_count: " + query_id + " output: " + ppId + ":" + carCount);
                             //System.out.println(str);
                         } catch (Exception ex) {
                             logger.error("COPESPEREngine : Error : " + ex.toString());
@@ -377,7 +377,7 @@ public class COPESPEREngine implements Runnable {
 
 
                 }
-                else if (query_id.equals("car_count")) {
+                else if (query_id.equals("car_speed")) {
 
                     String ppId = null;
                     //StringBuilder sb = new StringBuilder();
@@ -390,7 +390,7 @@ public class COPESPEREngine implements Runnable {
                             String carDataString = ppId + ":" + carCount;
                             //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
                             sendCPMessage(query_id, carDataString, ppId);
-                            logger.debug("car_data: " + query_id + " output: " + ppId + ":" + carCount);
+                            logger.debug("car_speed: " + query_id + " output: " + ppId + ":" + carCount);
                             //System.out.println(str);
                         } catch (Exception ex) {
                             logger.error("COPESPEREngine : Error : " + ex.toString());

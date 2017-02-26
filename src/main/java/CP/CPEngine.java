@@ -162,12 +162,12 @@ public class CPEngine implements Runnable {
 
                 sendout = new CPoutgoing(plugin,this);
 
-
+/*
                 queuePipeline = "13f8a846-0c70-4868-a73e-e20a1d8bddbb";
                 copPipeline = "176e5157-ab04-46e4-8265-7b2dcc29dd54";
                 ppPipeline = "1d606344-208c-4530-8f32-bc21900d4d5c";
                 state = 10;
-
+*/
 
                 while(plugin.isActive) {
 
