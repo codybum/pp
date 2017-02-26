@@ -1,7 +1,6 @@
 package CP;
 
 
-import COP.COPESPEREngine;
 import app.AppTools;
 import channels.ControllerChannel;
 import com.rabbitmq.client.ConnectionFactory;
@@ -10,9 +9,7 @@ import com.researchworx.cresco.library.utilities.CLogger;
 import core.Launcher;
 
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class CPEngine implements Runnable {
 
@@ -165,12 +162,13 @@ public class CPEngine implements Runnable {
 
                 sendout = new CPoutgoing(plugin,this);
 
-/*
-                queuePipeline = "4a871b1a-faff-4731-97df-dbd096f5c86f";
-                copPipeline = "3c9dbd08-61f2-4c18-8031-8bea612362dc";
-                ppPipeline = "3b352b8e-fbb0-404d-a6f3-5320f92aa953";
+
+                queuePipeline = "13f8a846-0c70-4868-a73e-e20a1d8bddbb";
+                copPipeline = "176e5157-ab04-46e4-8265-7b2dcc29dd54";
+                ppPipeline = "1d606344-208c-4530-8f32-bc21900d4d5c";
                 state = 10;
-*/
+
+
                 while(plugin.isActive) {
 
                     switch (state) {

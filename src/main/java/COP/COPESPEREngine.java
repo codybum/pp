@@ -123,7 +123,8 @@ public class COPESPEREngine implements Runnable {
             //ok
 
             addQuery("sensor_alert", "select ppId, sensorId, sensorValue from sensorMap where sensorValue = 100");
-            addQuery("car_data", "select irstream distinct ppId, avg(carValue) as sps from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
+            addQuery("car_speed", "select irstream distinct ppId, avg(carValue) as sps from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
+            addQuery("car_count", "select ppId, count(*) as avgValue from carMap.win:time_batch(15 sec) group by ppId output snapshot every 5 seconds");
 
             //ok
 
@@ -350,7 +351,33 @@ public class COPESPEREngine implements Runnable {
                     }
 
                 }
-                else if (query_id.equals("car_data")) {
+                else if (query_id.equals("car_speed")) {
+
+                    String ppId = null;
+                    //StringBuilder sb = new StringBuilder();
+                    for (EventBean eb : newEvents) {
+                        try {
+
+                            String carCount = eb.get("avgValue").toString();
+                            ppId = eb.get("ppId").toString();
+                            //sb.append(ppId + ":" + carCount + ",");
+                            String carDataString = ppId + ":" + carCount;
+                            //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
+                            sendCPMessage(query_id, carDataString, ppId);
+                            logger.debug("car_data: " + query_id + " output: " + ppId + ":" + carCount);
+                            //System.out.println(str);
+                        } catch (Exception ex) {
+                            logger.error("COPESPEREngine : Error : " + ex.toString());
+                        }
+
+                        //String carDataString = sb.toString().substring(0, sb.length() - 1);
+                        //logger.debug("new id car_data: " + query_id + " output: " + carDataString);
+                        //sendCPMessage(query_id, carDataString, ppId);
+                    }
+
+
+                }
+                else if (query_id.equals("car_count")) {
 
                     String ppId = null;
                     //StringBuilder sb = new StringBuilder();

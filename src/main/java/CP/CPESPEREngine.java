@@ -1,8 +1,6 @@
 package CP;
 
 
-import COP.COPEngine;
-import COP.CPoutgoing;
 import com.espertech.esper.client.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -63,6 +61,7 @@ public class CPESPEREngine implements Runnable {
             //cepConfig.getEngineDefaults().getThreading().setInternalTimerEnabled(false);
             //cepConfig.addEventType("MsgEvent", MsgEvent.class.getName());
 
+            /*
             Map<String, Object> sdef = new HashMap<>();
             sdef.put("ppId", String.class);
             sdef.put("copId", String.class);
@@ -70,13 +69,13 @@ public class CPESPEREngine implements Runnable {
             sdef.put("sensorValue", float.class);
 
             cepConfig.addEventType("sensorMap", sdef);
-
+            */
 
             Map<String, Object> cdef = new HashMap<>();
             cdef.put("ppId", String.class);
             cdef.put("copId", String.class);
-            cdef.put("carId", String.class);
-            cdef.put("carValue", int.class);
+            //cdef.put("carId", String.class);
+            cdef.put("carValue", float.class);
 
             cepConfig.addEventType("carMap", cdef);
 
@@ -106,9 +105,14 @@ public class CPESPEREngine implements Runnable {
 
             //addQuery("0", "select * from sensorMap");
 
-            addQuery("sensor_data", "select irstream copId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(15 sec) group by sensorId output snapshot every 5 seconds");
+            //addQuery("sensor_data", "select irstream copId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(15 sec) group by sensorId output snapshot every 5 seconds");
 
-            addQuery("car_data", "select irstream copId, count(carValue) as avgValue from carMap.win:time(15 sec) group by copId output snapshot every 5 seconds");
+            //ok
+            //addQuery("car_data", "select irstream copId, count(carValue) as avgValue from carMap.win:time(15 sec) group by copId output snapshot every 5 seconds");
+            //addQuery("car_data", "select irstream distinct copId, avg(carValue) as avgValue from carMap.win:time(15 sec) group by copId output snapshot every 5 seconds");
+            addQuery("car_data", "select copId, count(*) as avgValue from carMap.win:time_batch(15 sec) group by copId output snapshot every 5 seconds");
+
+            //ok
 
             //esper_querystring = "select params('sensor_data') from MsgEvent";
             //esper_querystring = "select * from sensorMap where sensorValue > 5";
@@ -141,8 +145,7 @@ public class CPESPEREngine implements Runnable {
                                 //input(message);
                                 //cepRT.sendEvent(me);
 
-
-
+                                /*
                                 String sensor_data = me.getParam("sensor_data");
                                 String[] sensorArray = sensor_data.split(",");
                                 for(String sensorEntry : sensorArray) {
@@ -154,8 +157,13 @@ public class CPESPEREngine implements Runnable {
                                     sensorMap.put("sensorValue", Float.parseFloat(sensorEntrySplit[1]));
                                     cepRT.sendEvent(sensorMap,"sensorMap");
                                 }
-                                String car_data = me.getParam("car_data");
-                                logger.error("car_data: " + car_data);
+                                */
+                                String[] car_data = me.getParam("car_data").split(":");
+                                Map<String,Object> carMap = new HashMap<>();
+                                carMap.put("ppId",me.getMsgPlugin());
+                                carMap.put("copId",me.getMsgAgent());
+                                carMap.put("carValue", Float.parseFloat(car_data[1]));
+                                cepRT.sendEvent(carMap,"carMap");
                                 /*
                                 String[] carArray = car_data.split(",");
                                 for(String carEntry : carArray) {
@@ -262,8 +270,9 @@ public class CPESPEREngine implements Runnable {
                     for (EventBean eb : newEvents) {
                         try {
                             String carCount = eb.get("avgValue").toString();
-                            copId = eb.get("ppId").toString();
-                            sb.append(copId + ":" + carCount + ",");
+                            copId = eb.get("copId").toString();
+                            logger.info(copId + ":" + carCount);
+                            //sb.append(copId + ":" + carCount + ",");
                             //tx_channel.basicPublish(outExchange, "", null, str.getBytes());
 
                             //logger.info("new id: " + query_id + " output: " + str);
@@ -272,8 +281,8 @@ public class CPESPEREngine implements Runnable {
                             System.out.println("COPESPEREngine : Error : " + ex.toString());
                         }
 
-                        String carDataString = sb.toString().substring(0,sb.length() -1);
-                        logger.info("new id: " + query_id + " output: " + carDataString);
+                        //String carDataString = sb.toString().substring(0,sb.length() -1);
+                       //logger.info("new id: " + query_id + " output: " + carDataString);
                         //sendCPMessage(query_id,carDataString,ppId);
                     }
 
