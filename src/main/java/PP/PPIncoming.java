@@ -30,8 +30,10 @@ public class PPIncoming {
 	        {
 	            channel = pp.ppFactory.newConnection().createChannel();
 				channel.basicQos(1);
-				channel.queueDeclare(pp.ppId , false, false, false, null);
-                logger.info(" [*] Waiting for messages in " + pp.ppId);
+				//channel.queueDeclare(pp.ppId , false, false, false, null);
+				channel.queueDeclare(pp.ppId, true, false, true, null);
+
+				logger.info(" [*] Waiting for messages in " + pp.ppId);
 
                 //Consumer consumer = new DefaultConsumer(channel);
 
