@@ -114,9 +114,16 @@ public class COPESPEREngine implements Runnable {
 
             //addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
 
-            addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time_batch(5 sec) group by sensorId output snapshot every 1 seconds");
+            //addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time_batch(5 sec) group by sensorId output snapshot every 1 seconds");
 
-            addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time_batch(5 sec) group by ppId output snapshot every 1 seconds");
+            addQuery("sensor_data", "select ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time_batch(5 sec) group by sensorId output snapshot every 1 seconds");
+
+            addQuery("sensor_alert", "select ppId, sensorId, sensorValue from sensorMap where sensorValue > 90");
+
+            addQuery("car_data", "select * from carMap");
+
+
+            //addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time_batch(5 sec) group by ppId output snapshot every 1 seconds");
 
 
 
@@ -216,8 +223,8 @@ public class COPESPEREngine implements Runnable {
                     for (EventBean eb : newEvents) {
                         try {
                             String ppId = eb.get("ppId").toString();
-                            if(!eventMap.containsKey(ppId)) {
-                                eventMap.put(ppId,new ArrayList<EventBean>());
+                            if (!eventMap.containsKey(ppId)) {
+                                eventMap.put(ppId, new ArrayList<EventBean>());
                                 //logger.error("Create new ppid " + ppId + " thread: " + Thread.currentThread().getId());
                             }
                             eventMap.get(ppId).add(eb);
@@ -230,13 +237,13 @@ public class COPESPEREngine implements Runnable {
 
 
                     for (Map.Entry<String, List<EventBean>> entry : eventMap.entrySet()) {
-                        String ppId= entry.getKey();
+                        String ppId = entry.getKey();
                         List<EventBean> ppEvents = new ArrayList<>(entry.getValue());
 
                         for (EventBean eb : ppEvents) {
                             try {
-                                if(!eventMap.containsKey(ppId)) {
-                                    eventMap.put(ppId,new ArrayList<EventBean>());
+                                if (!eventMap.containsKey(ppId)) {
+                                    eventMap.put(ppId, new ArrayList<EventBean>());
                                 }
                                 eventMap.get(ppId).add(eb);
                                 String sensorValue = eb.get("avgValue").toString();
@@ -251,13 +258,31 @@ public class COPESPEREngine implements Runnable {
                             }
 
                         }
-                        String sensorDataString = sb.toString().substring(0,sb.length() -1);
+                        String sensorDataString = sb.toString().substring(0, sb.length() - 1);
                         logger.debug("new id sensor_data: " + query_id + " output: " + sensorDataString);
-                        sendCPMessage(query_id,sensorDataString,ppId);
+                        sendCPMessage(query_id, sensorDataString, ppId);
                     }
 
 
-                } else if (query_id.equals("car_data")) {
+                }
+                else if (query_id.equals("sensor_alert")) {
+
+                    for (EventBean eb : newEvents) {
+                        try {
+                            String ppId = eb.get("ppId").toString();
+                            String sensorValue = eb.get("sensorValue").toString();
+                            String sensorId = eb.get("sensorId").toString();
+                            String sensorAlertString = sensorId + ":" + sensorValue;
+                            sendCPMessage(query_id, sensorAlertString, ppId);
+
+                        } catch (Exception ex) {
+                            logger.error("COPESPEREngine : Error : " + ex.toString());
+                        }
+
+                    }
+
+                }
+                else if (query_id.equals("car_data")) {
 
                     String ppId = null;
                     StringBuilder sb = new StringBuilder();
@@ -274,9 +299,9 @@ public class COPESPEREngine implements Runnable {
                             logger.error("COPESPEREngine : Error : " + ex.toString());
                         }
 
-                        String carDataString = sb.toString().substring(0,sb.length() -1);
+                        String carDataString = sb.toString().substring(0, sb.length() - 1);
                         logger.debug("new id car_data: " + query_id + " output: " + carDataString);
-                        sendCPMessage(query_id,carDataString,ppId);
+                        sendCPMessage(query_id, carDataString, ppId);
                     }
 
 
