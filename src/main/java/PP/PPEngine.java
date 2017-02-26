@@ -59,14 +59,14 @@ public class PPEngine implements Runnable {
                     me.setParam("car_data",genCarData(hour));
                     sendout.sendMessage(copId,me);
                     Thread.sleep(1000);
-                    if(count == 10) {
+                    //if(count == 10) {
                         if(hour == 24) {
                             hour = 0;
                         } else {
                             hour++;
                         }
-                    }
-                    count++;
+                    //}
+                    //count++;
                 }
                 incoming.stop();
 

@@ -71,13 +71,19 @@ public class CPESPEREngine implements Runnable {
             cepConfig.addEventType("sensorMap", sdef);
             */
 
-            Map<String, Object> cdef = new HashMap<>();
-            cdef.put("ppId", String.class);
-            cdef.put("copId", String.class);
+            Map<String, Object> csdef = new HashMap<>();
+            csdef.put("ppId", String.class);
+            csdef.put("copId", String.class);
             //cdef.put("carId", String.class);
-            cdef.put("carValue", float.class);
+            csdef.put("carValue", float.class);
+            cepConfig.addEventType("carSpeedMap", csdef);
 
-            cepConfig.addEventType("carMap", cdef);
+            Map<String, Object> ccdef = new HashMap<>();
+            ccdef.put("ppId", String.class);
+            ccdef.put("copId", String.class);
+            //cdef.put("carId", String.class);
+            ccdef.put("carValue", float.class);
+            cepConfig.addEventType("carCountMap", ccdef);
 
             //epService.getEPAdministrator().getConfiguration().
             //        addEventType("CarLocUpdateEvent", def);
@@ -110,7 +116,7 @@ public class CPESPEREngine implements Runnable {
             //ok
             //addQuery("car_data", "select irstream copId, count(carValue) as avgValue from carMap.win:time(15 sec) group by copId output snapshot every 5 seconds");
             //addQuery("car_data", "select irstream distinct copId, avg(carValue) as avgValue from carMap.win:time(15 sec) group by copId output snapshot every 5 seconds");
-            addQuery("car_data", "select copId, count(*) as avgValue from carMap.win:time_batch(15 sec) group by copId output snapshot every 5 seconds");
+            addQuery("car_count", "select copId, avg(carValue) as avgValue from carCountMap.win:time_batch(15 sec) group by copId output snapshot every 5 seconds");
 
             //ok
 
@@ -158,12 +164,30 @@ public class CPESPEREngine implements Runnable {
                                     cepRT.sendEvent(sensorMap,"sensorMap");
                                 }
                                 */
-                                String[] car_data = me.getParam("car_data").split(":");
-                                Map<String,Object> carMap = new HashMap<>();
-                                carMap.put("ppId",me.getMsgPlugin());
-                                carMap.put("copId",me.getMsgAgent());
-                                carMap.put("carValue", Float.parseFloat(car_data[1]));
-                                cepRT.sendEvent(carMap,"carMap");
+                                /*
+                        "car_count":"pp-eb468454-6d4c-472c-9adf-f725b91258b3:75"
+                        "car_speed":"pp-9c5a58eb-9d09-4d37-952a-3c8e05ef4990:45.04615384615385"
+                        "sensor_alert":"s8:100"
+                        */
+                                if(me.getParam("car_count") != null) {
+                                    String[] car_data = me.getParam("car_count").split(":");
+                                    Map<String,Object> carMap = new HashMap<>();
+                                    carMap.put("ppId",me.getMsgPlugin());
+                                    carMap.put("copId",me.getMsgAgent());
+                                    carMap.put("carValue", Integer.parseInt(car_data[1]));
+                                    logger.error(car_data[1]);
+                                    //cepRT.sendEvent(carMap,"carCountMap");
+                                }
+                                else if(me.getParam("car_speed") != null) {
+                                    String[] car_data = me.getParam("car_speed").split(":");
+                                    Map<String,Object> carMap = new HashMap<>();
+                                    carMap.put("ppId",me.getMsgPlugin());
+                                    carMap.put("copId",me.getMsgAgent());
+                                    carMap.put("carValue", Float.parseFloat(car_data[1]));
+                                    cepRT.sendEvent(carMap,"carSpeedMap");
+                                }
+
+
                                 /*
                                 String[] carArray = car_data.split(",");
                                 for(String carEntry : carArray) {
@@ -263,7 +287,7 @@ public class CPESPEREngine implements Runnable {
                     }
 
 
-                } else if (query_id.equals("car_data")) {
+                } else if (query_id.equals("car_count")) {
 
                     String copId = null;
                     StringBuilder sb = new StringBuilder();

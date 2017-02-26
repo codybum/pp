@@ -47,11 +47,13 @@ public class CPIncoming {
 						String message = new String(body, "UTF-8");
                         MsgEvent me = gson.fromJson(message, MsgEvent.class);
 						logger.debug(pp.cpId + " [x] Received '" + message + "'");
-						logger.info(pp.cpId + " [x] Received CP: " + me.getMsgRegion() + " COP: " + me.getMsgAgent() + " PP: " + me.getMsgPlugin() + " " + message );
-                        //params":{"msg":"","car_data":"pp-11cfd543-7b24-474b-b396-cbadf91989ca:45.072463768115945"}}'
-						//params":{"msg":"","sensor_alert":"s4:100"}}'
-                        //sensor_alert: sensor_alert output: pp-44f1f9cd-504b-40f6-82f1-d48c5af08de8:s9:100
-                        //car_data: car_data output: pp-5e25ced0-71ac-41c1-835b-77b88e4af587:44.6578947368421
+						//logger.info(pp.cpId + " [x] Received CP: " + me.getMsgRegion() + " COP: " + me.getMsgAgent() + " PP: " + me.getMsgPlugin() + " " + message );
+                        pp.cepQueue.offer(me);
+						/*
+                        "car_count":"pp-eb468454-6d4c-472c-9adf-f725b91258b3:75"
+                        "car_speed":"pp-9c5a58eb-9d09-4d37-952a-3c8e05ef4990:45.04615384615385"
+                        "sensor_alert":"s8:100"
+                        */
 
                         /*
                         if(me.getParam("car_data") != null) {
