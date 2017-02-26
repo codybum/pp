@@ -83,7 +83,7 @@ public class PPEngine implements Runnable {
             StringBuilder sb = new StringBuilder();
             for(int i = 0; i < 1000; i++) {
 
-                int sensorValue = ThreadLocalRandom.current().nextInt(0, 100 + 1);
+                int sensorValue = ThreadLocalRandom.current().nextInt(0, 1000 + 1);
 
                 sb.append("s" + i + ":" + sensorValue + ",");
 

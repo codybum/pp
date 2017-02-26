@@ -122,7 +122,7 @@ public class COPESPEREngine implements Runnable {
 
             //ok
 
-            addQuery("sensor_alert", "select ppId, sensorId, sensorValue from sensorMap where sensorValue = 100");
+            addQuery("sensor_alert", "select ppId, sensorId, sensorValue from sensorMap where sensorValue > 950");
             addQuery("car_speed", "select irstream distinct ppId, avg(carValue) as sps from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
             addQuery("car_count", "select ppId, count(*) as avgValue from carMap.win:time_batch(15 sec) group by ppId output snapshot every 5 seconds");
 

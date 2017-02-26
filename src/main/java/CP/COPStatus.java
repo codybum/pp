@@ -35,7 +35,7 @@ public class COPStatus {
 		 	inAction = true;
 			 if (Float.parseFloat(carCount) > 300.0) {
 				 if (pipelineId == null) {
-					 pipelineId = cp.at.addCOP(copId);
+					 //pipelineId = cp.at.addCOP(copId);
 				     logger.info("start " + pipelineId + " high " + copId + ":" + carCount);
 				 }
 			 } else if (Float.parseFloat(carCount) < 240.0) {
@@ -43,10 +43,10 @@ public class COPStatus {
 					//logger.info("stop low " + copId + ":" + carCount);
 					//check that it has started
                     status_code = cp.at.getGpipelineStatus(pipelineId);
-                    if(status_code.equals("10")) {
-                        cp.at.removeGpipeline(pipelineId);
+                    //if(status_code.equals("10")) {
+                    //    cp.at.removeGpipeline(pipelineId);
                         logger.info("removing " + pipelineId + " low " + copId + ":" + carCount);
-                    }
+                    //}
 				}
 			 }
 			 inAction = false;
