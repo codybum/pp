@@ -165,12 +165,12 @@ public class CPEngine implements Runnable {
 
                 sendout = new CPoutgoing(plugin,this);
 
-
+/*
                 queuePipeline = "4a871b1a-faff-4731-97df-dbd096f5c86f";
                 copPipeline = "3c9dbd08-61f2-4c18-8031-8bea612362dc";
                 ppPipeline = "3b352b8e-fbb0-404d-a6f3-5320f92aa953";
                 state = 10;
-
+*/
                 while(plugin.isActive) {
 
                     switch (state) {
