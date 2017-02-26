@@ -106,11 +106,11 @@ public class COPESPEREngine implements Runnable {
 
             //addQuery("0", "select ppId from sensorMap");
 
-            addQuery("0", "select * from sensorMap");
+            //addQuery("0", "select * from sensorMap");
 
-            //addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(15 sec) group by sensorId output snapshot every 5 seconds");
+            addQuery("sensor_data", "select irstream ppId, sensorId, avg(sensorValue) as avgValue from sensorMap.win:time(15 sec) group by sensorId output snapshot every 5 seconds");
 
-            //addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
+            addQuery("car_data", "select irstream ppId, count(carValue) as avgValue from carMap.win:time(15 sec) group by ppId output snapshot every 5 seconds");
 
             //esper_querystring = "select params('sensor_data') from MsgEvent";
             //esper_querystring = "select * from sensorMap where sensorValue > 5";
@@ -177,14 +177,14 @@ public class COPESPEREngine implements Runnable {
                 catch(Exception ex)
                 {
                     String errorString = "QueryNode: Error: " + ex.toString();
-                    System.out.println(errorString);
+                    logger.error(errorString);
                 }
             }
 
         }
         catch(Exception ex)
         {
-            System.out.println("COPESPEREngine Error: " + ex.toString());
+            logger.error("COPESPEREngine Error: " + ex.toString());
         }
 
     }
@@ -216,7 +216,7 @@ public class COPESPEREngine implements Runnable {
                             eventMap.get(ppId).add(eb);
 
                         } catch (Exception ex) {
-                            System.out.println("COPESPEREngine : Error : " + ex.toString());
+                            logger.error("COPESPEREngine : Error : " + ex.toString());
                         }
 
                     }
@@ -240,12 +240,12 @@ public class COPESPEREngine implements Runnable {
                                 //logger.info("new id: " + query_id + " output: " + str);
                                 //System.out.println(str);
                             } catch (Exception ex) {
-                                System.out.println("COPESPEREngine : Error : " + ex.toString());
+                                logger.error("COPESPEREngine : Error : " + ex.toString());
                             }
 
                         }
                         String sensorDataString = sb.toString().substring(0,sb.length() -1);
-                        logger.debug("new id: " + query_id + " output: " + sensorDataString);
+                        logger.debug("new id sensor_data: " + query_id + " output: " + sensorDataString);
                         sendCPMessage(query_id,sensorDataString,ppId);
                     }
 
@@ -264,11 +264,11 @@ public class COPESPEREngine implements Runnable {
                             //logger.info("new id: " + query_id + " output: " + str);
                             //System.out.println(str);
                         } catch (Exception ex) {
-                            System.out.println("COPESPEREngine : Error : " + ex.toString());
+                            logger.error("COPESPEREngine : Error : " + ex.toString());
                         }
 
                         String carDataString = sb.toString().substring(0,sb.length() -1);
-                        logger.debug("new id: " + query_id + " output: " + carDataString);
+                        logger.debug("new id car_data: " + query_id + " output: " + carDataString);
                         sendCPMessage(query_id,carDataString,ppId);
                     }
 
@@ -285,7 +285,7 @@ public class COPESPEREngine implements Runnable {
                             //logger.info("id: " + query_id + " output: " +  str);
                             //System.out.println(str);
                         } catch (Exception ex) {
-                            System.out.println("COPESPEREngine : Error : " + ex.toString());
+                            logger.error("COPESPEREngine : Error : " + ex.toString());
                         }
                     }
                 }
@@ -314,7 +314,7 @@ public class COPESPEREngine implements Runnable {
         }
         catch(Exception ex)
         {
-            System.out.println("COPESPEREngine addQuery: " + ex.toString());
+            logger.error("COPESPEREngine addQuery: " + ex.toString());
             return false;
         }
     }
@@ -336,33 +336,11 @@ public class COPESPEREngine implements Runnable {
         }
         catch(Exception ex)
         {
-            System.out.println("COPESPEREngine delQuery: " + ex.toString());
+            logger.error("COPESPEREngine delQuery: " + ex.toString());
             return false;
         }
 
     }
 
-    public void input(String inputStr) throws ParseException
-    {
-        try
-        {
-            //netFlow flow = nFlowFromJson(inputStr);
-            //cepRT.sendEvent(flow);
-        }
-        catch(Exception ex)
-        {
-            System.out.println("COPESPEREngine : Input netFlow Error : " + ex.toString());
-            System.out.println("COPESPEREngine : Input netFlow Error : InputStr " + inputStr);
-        }
-
-    }
-
-    /*
-    private netFlow nFlowFromJson(String json)
-    {
-        netFlow flow = gson.fromJson(json, netFlow.class);
-        return flow;
-    }
-    */
 
 }
