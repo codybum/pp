@@ -70,8 +70,9 @@ public class CPoutgoing {
 		boolean isCreated = false;
 		try {
 		    Channel channel = pp.cpFactory.newConnection().createChannel();
-		    channel.queueDeclare(queueName, false, false, false, null);
-		    channelMap.put(queueName,channel);
+		    //channel.queueDeclare(queueName, false, false, false, null);
+			channel.queueDeclare(queueName, true, false, true, null);
+			channelMap.put(queueName,channel);
 		    isCreated = true;
 		}
 		catch(Exception ex) {
