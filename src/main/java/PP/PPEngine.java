@@ -56,7 +56,7 @@ public class PPEngine implements Runnable {
                     me.setParam("sensor_data",genSensorData());
                     me.setParam("car_data",genCarData(plugin.hour));
                     sendout.sendMessage(copId,me);
-                    Thread.sleep(5000);
+                    Thread.sleep(1000);
                 }
                 incoming.stop();
 
